@@ -11,6 +11,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png"/>
 <title>My Way</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -26,7 +27,35 @@ input,textarea{font-family:'Barlow',sans-serif;background:var(--bg3);border:1px 
 input::placeholder,textarea::placeholder{color:var(--muted);}
 input:focus,textarea:focus{border-color:var(--gold);}
 
-/* ── SPLASH ── */
+/* ── AUTH ── */
+#authScreen{position:fixed;inset:0;background:var(--bg);z-index:998;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;transition:opacity 0.4s;}
+#authScreen.gone{opacity:0;pointer-events:none;}
+.auth-logo{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;letter-spacing:0.06em;color:var(--cream);line-height:1;text-align:center;margin-bottom:4px;}
+.auth-sub{font-size:12px;letter-spacing:0.18em;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:40px;}
+.auth-card{width:100%;max-width:340px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;background:var(--bg3);border-radius:8px;padding:3px;}
+.auth-tab{flex:1;padding:8px;text-align:center;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;transition:all 0.2s;}
+.auth-tab.on{background:var(--bg2);color:var(--cream);}
+.auth-field{margin-bottom:14px;}
+.auth-field label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;display:block;margin-bottom:5px;}
+.auth-btn{width:100%;padding:14px;background:var(--gold);color:var(--bg);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-top:6px;transition:opacity 0.2s;}
+.auth-btn:active{opacity:0.8;}
+.auth-err{font-family:'DM Mono',monospace;font-size:10px;color:#ff7070;text-align:center;margin-top:10px;min-height:16px;}
+.auth-ok{font-family:'DM Mono',monospace;font-size:10px;color:var(--green);text-align:center;margin-top:10px;min-height:16px;}
+
+/* ── USER MENU ── */
+.user-pill{position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;z-index:50;display:flex;align-items:center;gap:6px;}
+.user-menu{position:fixed;top:0;right:0;bottom:0;width:260px;background:var(--bg2);border-left:1px solid var(--border);z-index:500;transform:translateX(100%);transition:transform 0.3s;padding:52px 20px 20px;display:flex;flex-direction:column;gap:0;}
+.user-menu.open{transform:translateX(0);}
+.um-name{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--cream);margin-bottom:4px;}
+.um-email{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:24px;}
+.um-section{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;margin-top:20px;}
+.um-invite{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;}
+.um-invite-code{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold);letter-spacing:0.1em;}
+.um-invite-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
+.um-signout{margin-top:auto;width:100%;padding:12px;border:1px solid #8a3a3a;border-radius:10px;color:#ff7070;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+.um-overlay{position:fixed;inset:0;z-index:499;display:none;}
+.um-overlay.open{display:block;}
 #splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:999;transition:opacity 0.6s;}
 #splash.gone{opacity:0;pointer-events:none;}
 .splash-bar{width:60px;height:3px;background:var(--gold);margin:16px 0 8px;}
@@ -284,6 +313,51 @@ input:focus,textarea:focus{border-color:var(--gold);}
 </head>
 <body>
 
+<!-- AUTH SCREEN -->
+<div id="authScreen">
+  <div class="auth-logo">MY WAY</div>
+  <div class="auth-sub">Rooted. Disciplined. Built.</div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <div class="auth-tab on" id="tabLogin" onclick="switchAuthTab('login')">Sign In</div>
+      <div class="auth-tab" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</div>
+    </div>
+
+    <!-- Login -->
+    <div id="loginForm">
+      <div class="auth-field"><label>Email</label><input type="email" id="loginEmail" placeholder="your@email.com" inputmode="email"/></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••"/></div>
+      <button class="auth-btn" onclick="doLogin()">Enter</button>
+    </div>
+
+    <!-- Signup -->
+    <div id="signupForm" style="display:none;">
+      <div class="auth-field"><label>Invite Code</label><input type="text" id="signupCode" placeholder="e.g. MYWAY001" style="text-transform:uppercase;letter-spacing:0.1em;"/></div>
+      <div class="auth-field"><label>Your Name</label><input type="text" id="signupName" placeholder="First name"/></div>
+      <div class="auth-field"><label>Email</label><input type="email" id="signupEmail" placeholder="your@email.com" inputmode="email"/></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="signupPass" placeholder="min 6 characters"/></div>
+      <button class="auth-btn" onclick="doSignup()">Create Account</button>
+    </div>
+
+    <div class="auth-err" id="authErr"></div>
+    <div class="auth-ok" id="authOk"></div>
+  </div>
+</div>
+
+<!-- USER MENU OVERLAY -->
+<div class="um-overlay" id="umOverlay" onclick="closeUserMenu()"></div>
+<div class="user-menu" id="userMenu">
+  <div class="um-name" id="umName">Rodas</div>
+  <div class="um-email" id="umEmail">—</div>
+  <div class="um-section">Your Invite Codes</div>
+  <div id="umCodes"></div>
+  <div class="um-section">Account</div>
+  <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);line-height:1.8;">
+    All your data syncs to the cloud.<br>Access from any device.
+  </div>
+  <button class="um-signout" onclick="doSignout()">Sign Out</button>
+</div>
+
 <!-- SPLASH -->
 <div id="splash">
   <div class="splash-lift">🏋️</div>
@@ -297,7 +371,8 @@ input:focus,textarea:focus{border-color:var(--gold);}
 
     <!-- ══ TODAY ══ -->
     <div class="screen on" id="s-today">
-      <div style="padding:52px 16px 0 16px;">
+      <div style="padding:52px 16px 0 16px;position:relative;">
+        <div class="user-pill" onclick="openUserMenu()" id="userPill">👤 <span id="userPillName">—</span></div>
         <div class="today-date" id="todayDate"></div>
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px;">
           <div>
@@ -2051,18 +2126,211 @@ function renderMealInit() {
   setBmiSex("female");
   renderIFTimer();
 }
-setTimeout(()=>{
-  document.getElementById("splash").classList.add("gone");
-  renderToday();
-  renderCountdown();
-  renderChalCountdown();
-  renderChallengeGrid();
-  renderPrayerTab();
-  renderMealInit();
-  setInterval(()=>{ renderCountdown(); renderChalCountdown(); }, 1000);
-  renderWorkout();
-  renderJournal();
-}, 1800);
+// ══ SUPABASE ════════════════════════════════════════════
+const SUPABASE_URL = "https://wsqpwipbjcwzjuxbawis.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzcXB3aXBiamN3emp1eGJhd2lzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2ODI0MzksImV4cCI6MjA5NjI1ODQzOX0.aBUGrTE2obIhG9TF4a_ft55PVXzubRTpYJD9JSpqRO0";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+
+// ── Override storage to sync with Supabase ──────────────
+const _localGet = k => { try { return JSON.parse(localStorage.getItem(k)||"null"); } catch { return null; } };
+const _localSet = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+async function cloudSet(key, value) {
+  _localSet(key, value); // always save locally first (fast)
+  if (!currentUser) return;
+  await sb.from("user_data").upsert({
+    user_id: currentUser.id,
+    data_key: key,
+    data_value: value,
+    updated_at: new Date().toISOString()
+  }, { onConflict: "user_id,data_key" });
+}
+
+async function cloudGet(key) {
+  if (!currentUser) return _localGet(key);
+  const { data } = await sb.from("user_data")
+    .select("data_value")
+    .eq("user_id", currentUser.id)
+    .eq("data_key", key)
+    .single();
+  if (data) {
+    _localSet(key, data.data_value);
+    return data.data_value;
+  }
+  return _localGet(key);
+}
+
+async function syncAllFromCloud() {
+  if (!currentUser) return;
+  const { data } = await sb.from("user_data")
+    .select("data_key, data_value")
+    .eq("user_id", currentUser.id);
+  if (data) {
+    data.forEach(row => _localSet(row.data_key, row.data_value));
+  }
+}
+
+// Override the get/set functions to use cloud
+const origSaveChecked = saveChecked;
+const origSaveWorkoutLog = saveWorkoutLog;
+const origSaveJournals = saveJournals;
+const origSaveMealLog = saveMealLog;
+const origSaveChalLog = saveChalLog;
+const origSavePrayLog = savePrayLog;
+const origSaveIFState = saveIFState;
+
+// Patch save functions to also sync to cloud
+window.saveChecked = v => { _localSet("mw_checked",v); cloudSet("mw_checked",v); };
+window.saveWorkoutLog = v => { _localSet("mw_wlog",v); cloudSet("mw_wlog",v); };
+window.saveJournals = v => { _localSet("mw_journals",v); cloudSet("mw_journals",v); };
+window.saveMealLog = v => { _localSet("mw_meallog",v); cloudSet("mw_meallog",v); };
+window.saveChalLog = v => { _localSet("mw_challenge",v); cloudSet("mw_challenge",v); };
+window.savePrayLog = v => { _localSet("mw_prayer",v); cloudSet("mw_prayer",v); };
+window.saveIFState = v => { _localSet("mw_if",v); cloudSet("mw_if",v); };
+
+// ── AUTH UI ──────────────────────────────────────────────
+function switchAuthTab(tab) {
+  document.getElementById("tabLogin").classList.toggle("on", tab==="login");
+  document.getElementById("tabSignup").classList.toggle("on", tab==="signup");
+  document.getElementById("loginForm").style.display = tab==="login" ? "block" : "none";
+  document.getElementById("signupForm").style.display = tab==="signup" ? "block" : "none";
+  document.getElementById("authErr").textContent = "";
+  document.getElementById("authOk").textContent = "";
+}
+
+async function doLogin() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  const err = document.getElementById("authErr");
+  err.textContent = "";
+  if(!email || !pass) { err.textContent = "Enter email and password."; return; }
+  const btn = document.querySelector("#loginForm .auth-btn");
+  btn.textContent = "Signing in..."; btn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.textContent = "Enter"; btn.disabled = false;
+  if(error) { err.textContent = error.message; return; }
+  await onSignedIn(data.user);
+}
+
+async function doSignup() {
+  const code = document.getElementById("signupCode").value.trim().toUpperCase();
+  const name = document.getElementById("signupName").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const pass = document.getElementById("signupPass").value;
+  const err = document.getElementById("authErr");
+  const ok = document.getElementById("authOk");
+  err.textContent = ""; ok.textContent = "";
+
+  if(!code||!name||!email||!pass) { err.textContent = "Fill in all fields."; return; }
+  if(pass.length < 6) { err.textContent = "Password must be at least 6 characters."; return; }
+
+  // Check invite code
+  const { data: codeData } = await sb.from("invite_codes").select("*").eq("code", code).eq("used", false).single();
+  if(!codeData) { err.textContent = "Invalid or already used invite code."; return; }
+
+  const btn = document.querySelector("#signupForm .auth-btn");
+  btn.textContent = "Creating..."; btn.disabled = true;
+
+  const { data, error } = await sb.auth.signUp({ email, password: pass });
+  if(error) { err.textContent = error.message; btn.textContent = "Create Account"; btn.disabled = false; return; }
+
+  // Create profile
+  await sb.from("profiles").insert({
+    id: data.user.id,
+    email,
+    username: name,
+    invite_code: code
+  });
+
+  // Mark code as used
+  await sb.from("invite_codes").update({ used: true, used_by: data.user.id }).eq("code", code);
+
+  btn.textContent = "Create Account"; btn.disabled = false;
+  ok.textContent = "Account created! Signing you in...";
+  setTimeout(() => doLogin(), 1200);
+}
+
+async function doSignout() {
+  await sb.auth.signOut();
+  currentUser = null; currentProfile = null;
+  closeUserMenu();
+  document.getElementById("authScreen").classList.remove("gone");
+  document.getElementById("loginEmail").value = "";
+  document.getElementById("loginPass").value = "";
+  document.getElementById("authErr").textContent = "";
+}
+
+function openUserMenu() {
+  document.getElementById("userMenu").classList.add("open");
+  document.getElementById("umOverlay").classList.add("open");
+}
+
+function closeUserMenu() {
+  document.getElementById("userMenu").classList.remove("open");
+  document.getElementById("umOverlay").classList.remove("open");
+}
+
+async function onSignedIn(user) {
+  currentUser = user;
+  // Get profile
+  const { data: profile } = await sb.from("profiles").select("*").eq("id", user.id).single();
+  currentProfile = profile;
+
+  const name = profile?.username || user.email.split("@")[0];
+  document.getElementById("userPillName").textContent = name;
+  document.getElementById("umName").textContent = name;
+  document.getElementById("umEmail").textContent = user.email;
+
+  // Show invite codes for Rodas (admin)
+  if(profile?.username === "Rodas" || user.email.includes("rodas")) {
+    const { data: codes } = await sb.from("invite_codes").select("*").order("created_at");
+    const codesEl = document.getElementById("umCodes");
+    codesEl.innerHTML = codes.map(c=>`
+      <div class="um-invite">
+        <div class="um-invite-code">${c.code}</div>
+        <div class="um-invite-label">${c.used ? "✓ Used" : "Available"}</div>
+      </div>`).join("");
+  } else {
+    document.getElementById("umCodes").innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">Share your invite code with a friend to invite them.</div>`;
+  }
+
+  // Sync data from cloud
+  await syncAllFromCloud();
+
+  // Hide auth, show app
+  document.getElementById("authScreen").classList.add("gone");
+
+  // Boot app
+  setTimeout(()=>{
+    document.getElementById("splash").classList.add("gone");
+    renderToday();
+    renderCountdown();
+    renderChalCountdown();
+    renderChallengeGrid();
+    renderPrayerTab();
+    renderMealInit();
+    setInterval(()=>{ renderCountdown(); renderChalCountdown(); }, 1000);
+    renderWorkout();
+    renderJournal();
+  }, 600);
+}
+
+// ── BOOT ────────────────────────────────────────────────
+(async () => {
+  // Check if already logged in
+  const { data: { session } } = await sb.auth.getSession();
+  if(session?.user) {
+    await onSignedIn(session.user);
+  } else {
+    // Show auth screen, hide splash
+    setTimeout(()=>{
+      document.getElementById("splash").classList.add("gone");
+    }, 1800);
+  }
+})();
 
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 </script>
