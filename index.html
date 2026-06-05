@@ -1,0 +1,2070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="My Way"/>
+<meta name="theme-color" content="#0d0d0d"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<title>My Way</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0d0d0d; --bg2:#141414; --bg3:#1a1a1a; --bg4:#222;
+  --gold:#c8a86a; --gold2:#e8c87a; --cream:#e8e4d8;
+  --muted:#444; --dim:#282828; --border:#2a2a2a;
+  --green:#5a8a5a; --red:#8a4a4a; --blue:#4a6a8a;
+  --faith:#c8a86a; --gym:#6a9e6a; --fuel:#a86a4a; --skill:#4a7aaa;
+}
+html,body{height:100%;background:var(--bg);color:var(--cream);font-family:'Barlow',sans-serif;overflow-x:hidden;}
+button{font-family:'Barlow',sans-serif;cursor:pointer;border:none;background:none;color:inherit;}
+input,textarea{font-family:'Barlow',sans-serif;background:var(--bg3);border:1px solid var(--border);color:var(--cream);border-radius:8px;padding:10px 14px;font-size:15px;width:100%;outline:none;}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+input:focus,textarea:focus{border-color:var(--gold);}
+
+/* ── SPLASH ── */
+#splash{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:999;transition:opacity 0.6s;}
+#splash.gone{opacity:0;pointer-events:none;}
+.splash-bar{width:60px;height:3px;background:var(--gold);margin:16px 0 8px;}
+.splash-t{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:900;letter-spacing:0.06em;color:var(--cream);line-height:1;}
+.splash-s{font-size:12px;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;}
+.splash-lift{font-size:40px;margin-bottom:4px;}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex-direction:column;min-height:100dvh;}
+.content{flex:1;overflow-y:auto;padding-bottom:80px;}
+
+/* ── BOTTOM NAV ── */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:100;}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;font-weight:500;transition:color 0.2s;}
+.bnav-btn.on{color:var(--gold);}
+.bnav-icon{font-size:20px;line-height:1;}
+
+/* ── SCREENS ── */
+.screen{display:none;}
+.screen.on{display:block;}
+
+/* ── TOP BAR ── */
+.topbar{padding:52px 20px 16px;border-bottom:1px solid var(--border);}
+.topbar-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:4px;}
+.topbar-title{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;line-height:1;}
+.topbar-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+
+/* ── TODAY ── */
+.today-hero{padding:20px;display:flex;gap:16px;align-items:flex-start;}
+.today-left{flex:1;}
+.today-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.today-dayname{font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;line-height:1;color:var(--cream);text-transform:uppercase;}
+.today-focus{font-size:13px;color:var(--gold);margin-top:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;}
+.ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',monospace;font-size:16px;font-weight:700;color:var(--gold);}
+
+.verse-card{margin:0 16px 16px;background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:14px 16px;}
+.verse-text{font-size:14px;font-style:italic;color:var(--cream);line-height:1.6;margin-bottom:4px;}
+.verse-ref{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);}
+
+.week-strip{padding:0 16px 16px;display:flex;gap:8px;}
+.wday{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.wday-dot{width:100%;aspect-ratio:1;border-radius:6px;background:var(--dim);transition:all 0.3s;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;}
+.wday-dot.today{box-shadow:0 0 0 2px var(--gold);}
+.wday-dot.full{background:var(--gold);color:var(--bg);}
+.wday-dot.partial{background:rgba(200,168,106,0.3);}
+.wday-lbl{font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);}
+.wday-lbl.today{color:var(--gold);}
+
+.section-head{padding:0 16px 10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);}
+
+.pillar-card{margin:0 16px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.3s;}
+.pillar-card.done{border-color:var(--gold);}
+.pillar-head{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;}
+.pillar-accent{width:4px;border-radius:2px;align-self:stretch;flex-shrink:0;}
+.pillar-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;flex:1;}
+.pillar-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.pillar-frac{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;}
+.pillar-chev{color:var(--muted);font-size:12px;transition:transform 0.25s;}
+.pillar-card.open .pillar-chev{transform:rotate(180deg);}
+.pillar-body{display:none;padding:0 16px 14px 16px;}
+.pillar-card.open .pillar-body{display:block;}
+.pillar-verse{font-size:12px;font-style:italic;color:var(--muted);padding:0 0 12px;border-bottom:1px solid var(--border);margin-bottom:12px;line-height:1.6;}
+
+.task-row{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid rgba(42,42,42,0.6);cursor:pointer;}
+.task-row:last-child{border-bottom:none;}
+.task-chk{width:22px;height:22px;border-radius:5px;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all 0.2s;}
+.task-chk.on{background:var(--gold);border-color:var(--gold);}
+.task-chk.on::after{content:'✓';font-size:12px;color:var(--bg);font-weight:900;}
+.task-inf{flex:1;}
+.task-nm{font-size:15px;transition:color 0.2s;}
+.task-nm.done{color:var(--muted);text-decoration:line-through;}
+.task-mt{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* ── WORKOUT ── */
+.workout-hero{background:var(--bg2);border-bottom:1px solid var(--border);padding:52px 20px 20px;}
+.workout-day-tabs{display:flex;gap:6px;padding:16px;overflow-x:auto;scrollbar-width:none;}
+.workout-day-tabs::-webkit-scrollbar{display:none;}
+.wdtab{padding:8px 14px;border-radius:20px;border:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;transition:all 0.2s;flex-shrink:0;}
+.wdtab.on{background:var(--gold);border-color:var(--gold);color:var(--bg);}
+.wdtab.rest{border-color:var(--blue);color:var(--blue);}
+.wdtab.rest.on{background:var(--blue);color:var(--cream);}
+
+.workout-panel{display:none;padding:0 0 20px;}
+.workout-panel.on{display:block;}
+.wp-title{font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;text-transform:uppercase;padding:16px 16px 2px;line-height:1;}
+.wp-focus{font-size:13px;color:var(--muted);padding:0 16px;margin-bottom:16px;}
+.wp-rest-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center;margin:16px;}
+.wp-rest-icon{font-size:40px;margin-bottom:8px;}
+.wp-rest-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.wp-rest-desc{font-size:14px;color:var(--muted);line-height:1.6;}
+
+/* ── Exercise card redesign ── */
+.ex-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin:0 12px 12px;overflow:hidden;transition:border-color 0.3s;}
+.ex-card.ex-active{border-color:var(--gold);}
+.ex-head{display:flex;align-items:stretch;gap:0;cursor:pointer;}
+.ex-accent-bar{width:5px;flex-shrink:0;border-radius:0;}
+.ex-head-inner{flex:1;display:flex;align-items:center;gap:10px;padding:14px 14px 14px 12px;}
+.ex-num{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--gold);width:30px;flex-shrink:0;line-height:1;}
+.ex-info{flex:1;}
+.ex-name{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;text-transform:uppercase;letter-spacing:0.03em;line-height:1.1;}
+.ex-meta{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;}
+.ex-tag{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);background:var(--bg3);padding:2px 7px;border-radius:10px;letter-spacing:0.06em;}
+.ex-summary{font-family:'Barlow Condensed',sans-serif;font-size:14px;color:var(--muted);text-align:right;line-height:1.3;flex-shrink:0;}
+.ex-chev{color:var(--muted);font-size:12px;transition:transform 0.25s;margin-left:6px;}
+.ex-card.open .ex-chev{transform:rotate(180deg);}
+.ex-body{display:none;padding:0 14px 16px;}
+.ex-card.open .ex-body{display:block;}
+
+/* ── PR banner ── */
+.ex-pr-banner{background:rgba(90,138,90,0.12);border:1px solid rgba(90,138,90,0.3);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.ex-pr-left{font-family:'DM Mono',monospace;font-size:9px;color:var(--green);letter-spacing:0.1em;text-transform:uppercase;}
+.ex-pr-val{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--green);}
+
+/* ── Target reminder ── */
+.ex-target-banner{background:rgba(200,168,106,0.1);border:1px solid rgba(200,168,106,0.25);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.ex-target-text{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);flex:1;}
+.ex-target-val{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold);}
+
+/* ── Voice log card (big redesign) ── */
+.voice-log-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;}
+.vlc-title{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:10px;}
+.voice-log-btn{width:100%;padding:16px;border-radius:10px;border:2px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);transition:all 0.25s;margin-bottom:10px;}
+.voice-log-btn.listening{border-color:#c04a4a;background:rgba(138,60,60,0.15);color:#ff7070;animation:pulse 1s infinite;}
+.voice-log-btn .vlb-icon{font-size:22px;line-height:1;}
+.vlb-transcript{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);min-height:16px;text-align:center;font-style:italic;margin-bottom:10px;}
+
+/* ── Set rows (new compact powerlifter style) ── */
+.sets-grid{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.set-item{display:grid;grid-template-columns:22px 1fr 1fr 34px;gap:6px;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;transition:border-color 0.2s;}
+.set-item.set-done{border-color:rgba(90,138,90,0.5);background:rgba(90,138,90,0.06);}
+.si-num{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--muted);text-align:center;}
+.si-inp{padding:6px 8px;font-size:16px;border-radius:6px;text-align:center;}
+.si-check{width:32px;height:32px;border-radius:7px;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.2s;cursor:pointer;}
+.si-check.on{background:var(--green);border-color:var(--green);color:var(--bg);font-weight:900;}
+
+/* ── Next week target setter ── */
+.next-target-row{display:flex;gap:8px;align-items:center;margin-top:8px;}
+.next-target-row input{flex:1;padding:8px 10px;font-size:14px;}
+.set-target-btn{padding:9px 14px;background:rgba(200,168,106,0.15);border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;}
+.add-set-btn{width:100%;padding:10px;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;transition:all 0.2s;}
+.add-set-btn:active{border-color:var(--gold);color:var(--gold);}
+
+/* ── JOURNAL ── */
+.journal-list{padding:0 16px;}
+.journal-entry{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s;}
+.journal-entry:hover{border-color:var(--gold);}
+.je-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;}
+.je-preview{font-size:14px;color:var(--cream);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.je-mood{font-size:18px;float:right;margin-left:8px;}
+.journal-compose{padding:16px;border-top:1px solid var(--border);background:var(--bg2);}
+.mood-row{display:flex;gap:8px;margin-bottom:12px;}
+.mood-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--border);font-size:20px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.mood-btn.on{border-color:var(--gold);background:rgba(200,168,106,0.15);}
+.journal-ta{min-height:100px;resize:none;margin-bottom:10px;font-size:15px;line-height:1.6;}
+.save-btn{width:100%;padding:14px;background:var(--gold);color:var(--bg);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;}
+.journal-entry-full{position:fixed;inset:0;background:var(--bg);z-index:200;display:none;flex-direction:column;}
+.journal-entry-full.on{display:flex;}
+.jef-head{display:flex;align-items:center;padding:52px 20px 16px;border-bottom:1px solid var(--border);gap:12px;}
+.jef-back{font-size:24px;color:var(--gold);}
+.jef-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex:1;}
+.jef-del{color:var(--red);font-size:13px;font-family:'DM Mono',monospace;}
+.jef-body{flex:1;padding:20px;overflow-y:auto;}
+.jef-mood{font-size:32px;margin-bottom:12px;}
+.jef-text{font-size:16px;line-height:1.8;color:var(--cream);}
+
+/* ── PHILOSOPHY ── */
+.phil-screen{padding:52px 20px 20px;}
+.phil-title{font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;text-transform:uppercase;line-height:1;margin-bottom:4px;}
+.phil-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.phil-rule{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start;}
+.phil-num{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:var(--gold);line-height:1;width:32px;flex-shrink:0;}
+.phil-text{font-size:16px;color:var(--cream);line-height:1.6;}
+.phil-text em{color:var(--gold);font-style:italic;}
+.phil-divider{height:1px;background:var(--border);margin:24px 0;}
+.phil-verse-block{background:var(--bg2);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:16px;margin-bottom:12px;}
+.phil-verse-t{font-size:15px;font-style:italic;color:var(--cream);line-height:1.7;margin-bottom:6px;}
+.phil-verse-r{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);}
+
+.big-divider{height:1px;background:linear-gradient(to right,transparent,var(--gold),transparent);margin:20px 0;}
+
+/* ── VOICE ── */
+.mic-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);transition:all 0.2s;width:100%;margin-bottom:10px;}
+.mic-btn.recording{background:rgba(138,60,60,0.2);border-color:#c04a4a;color:#ff7070;animation:pulse 1s infinite;}
+.mic-btn .mic-dot{width:10px;height:10px;border-radius:50%;background:currentColor;}
+.mic-status{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-align:center;margin-bottom:8px;min-height:14px;letter-spacing:0.06em;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(192,74,74,0.4);}50%{box-shadow:0 0 0 8px rgba(192,74,74,0);}}
+
+.voice-weight-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all 0.2s;flex-shrink:0;}
+.voice-weight-btn.recording{background:rgba(138,60,60,0.3);border-color:#c04a4a;animation:pulse 1s infinite;}
+.meal-mode-btn{padding:9px 16px;border-radius:20px;border:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);background:var(--bg2);transition:all 0.2s;}
+.meal-mode-btn.on{background:var(--gold);border-color:var(--gold);color:var(--bg);}
+.diet-tab{padding:7px 14px;border-radius:16px;border:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);background:var(--bg2);transition:all 0.2s;}
+.diet-tab.on{background:var(--bg3);border-color:var(--sage,#7a9e7e);color:var(--cream);}
+.meal-panel{display:none;}
+.meal-panel.on{display:block;}
+
+.macro-bar-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.macro-totals{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.macro-cell{text-align:center;}
+.macro-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;line-height:1;}
+.macro-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
+.macro-goal{font-family:'DM Mono',monospace;font-size:9px;margin-top:1px;}
+.macro-progress{height:6px;border-radius:3px;background:var(--dim);overflow:hidden;margin-bottom:3px;}
+.macro-fill{height:100%;border-radius:3px;transition:width 0.4s;}
+
+.food-log-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.food-log-item:last-child{border-bottom:none;}
+.food-log-name{flex:1;font-size:14px;color:var(--cream);}
+.food-log-macros{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
+.food-log-cal{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--gold);}
+.food-log-del{color:var(--muted);font-size:18px;padding:4px 8px;}
+
+.meal-suggestion{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:8px;cursor:pointer;transition:border-color 0.2s;}
+.meal-suggestion:active{border-color:var(--gold);}
+.ms-name{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;}
+.ms-macros{display:flex;gap:12px;flex-wrap:wrap;}
+.ms-macro{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.ms-macro span{color:var(--cream);}
+
+.bmi-scale{height:12px;border-radius:6px;background:linear-gradient(to right,#4a8a6a,#8a9a4a,#c8a86a,#c87a4a,#8a3a3a);margin:12px 0 4px;position:relative;}
+.bmi-marker{position:absolute;top:-4px;width:4px;height:20px;background:var(--cream);border-radius:2px;transform:translateX(-50%);transition:left 0.5s;}
+.bmi-labels{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:8px;color:var(--muted);}
+.tdee-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.tdee-row:last-child{border-bottom:none;}
+.tdee-label{font-size:14px;color:var(--cream);}
+.tdee-val{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:var(--gold);}
+.countdown-card{margin:0 16px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;}
+.countdown-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(200,168,106,0.06) 0%,transparent 60%);pointer-events:none;}
+.cd-header{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;}
+.cd-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;}
+.cd-badge{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 10px;border-radius:20px;border:1px solid var(--gold);color:var(--gold);}
+.cd-badge.active{background:rgba(200,168,106,0.15);}
+.cd-badge.done{border-color:var(--green);color:var(--green);background:rgba(90,138,90,0.15);}
+.cd-badge.pre{border-color:var(--muted);color:var(--muted);}
+.cd-nums{display:flex;padding:4px 16px 16px;gap:10px;}
+.cd-unit{flex:1;text-align:center;}
+.cd-n{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;line-height:1;color:var(--cream);}
+.cd-n.gold{color:var(--gold);}
+.cd-u{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:3px;}
+.cd-sep{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:300;color:var(--border);align-self:center;padding-bottom:14px;}
+.cd-bar-wrap{padding:0 16px 16px;}
+.cd-bar-bg{height:4px;background:var(--dim);border-radius:2px;overflow:hidden;}
+.cd-bar-fill{height:100%;background:linear-gradient(to right,var(--gold),var(--gold2));border-radius:2px;transition:width 0.6s ease;}
+.cd-bar-labels{display:flex;justify-content:space-between;margin-top:6px;}
+.cd-bar-lbl{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+.cd-day-num{padding:0 16px 14px;display:flex;align-items:baseline;gap:8px;}
+.cd-day-big{font-family:'Barlow Condensed',sans-serif;font-size:56px;font-weight:900;line-height:1;color:var(--gold);}
+.cd-day-of{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:400;color:var(--muted);}
+.cd-message{padding:0 16px 14px;font-size:13px;font-style:italic;color:var(--muted);line-height:1.5;}
+
+
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-lift">🏋️</div>
+  <div class="splash-t">MY WAY</div>
+  <div class="splash-bar"></div>
+  <div class="splash-s">Rooted. Disciplined. Built.</div>
+</div>
+
+<div class="app">
+  <div class="content" id="content">
+
+    <!-- ══ TODAY ══ -->
+    <div class="screen on" id="s-today">
+      <div style="padding:52px 16px 0 16px;">
+        <div class="today-date" id="todayDate"></div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px;">
+          <div>
+            <div class="today-dayname" id="todayDay"></div>
+            <div class="today-focus" id="todayFocus"></div>
+          </div>
+          <div class="ring-wrap">
+            <svg width="72" height="72" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="28" fill="none" stroke="#222" stroke-width="6"/>
+              <circle id="ringArc" cx="36" cy="36" r="28" fill="none" stroke="#c8a86a" stroke-width="6" stroke-dasharray="0 175.9" stroke-linecap="round"/>
+            </svg>
+            <div class="ring-pct" id="ringPct">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verse-card" id="verseCard"></div>
+
+      <!-- 100 DAY CHALLENGE COUNTDOWN -->
+      <div class="countdown-card" id="cdCard">
+        <div class="cd-header">
+          <div class="cd-label">100 Day Challenge</div>
+          <div class="cd-badge pre" id="cdBadge">Jun 1 → Sep 9</div>
+        </div>
+        <div class="cd-day-num" id="cdDayNum" style="display:none;">
+          <div class="cd-day-big" id="cdDayBig"></div>
+          <div class="cd-day-of" id="cdDayOf"></div>
+        </div>
+        <div class="cd-nums" id="cdNums" style="display:none;">
+          <div class="cd-unit"><div class="cd-n" id="cdD">--</div><div class="cd-u">days</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-n" id="cdH">--</div><div class="cd-u">hrs</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-n" id="cdM">--</div><div class="cd-u">min</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-n" id="cdS">--</div><div class="cd-u">sec</div></div>
+        </div>
+        <div class="cd-bar-wrap" id="cdBarWrap" style="display:none;">
+          <div class="cd-bar-bg"><div class="cd-bar-fill" id="cdFill" style="width:0%"></div></div>
+          <div class="cd-bar-labels">
+            <div class="cd-bar-lbl">Jun 1</div>
+            <div class="cd-bar-lbl" id="cdPct2"></div>
+            <div class="cd-bar-lbl">Sep 9</div>
+          </div>
+        </div>
+        <div class="cd-message" id="cdMsg"></div>
+      </div>
+
+      <div class="week-strip" id="weekStrip"></div>
+
+      <div class="section-head">Non-Negotiables</div>
+      <div id="pillarCards"></div>
+    </div>
+
+    <!-- ══ WORKOUT ══ -->
+    <div class="screen" id="s-workout">
+      <div class="workout-hero">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Training Log</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:40px;font-weight:900;text-transform:uppercase;line-height:1;">MY WAY</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px;">Track every set. Build every week.</div>
+      </div>
+      <div class="workout-day-tabs" id="wdTabs"></div>
+      <div id="wdPanels"></div>
+    </div>
+
+    <!-- ══ JOURNAL ══ -->
+    <div class="screen" id="s-journal">
+      <div class="topbar">
+        <div class="topbar-label">My Way</div>
+        <div class="topbar-title">Journal</div>
+        <div class="topbar-sub">Write it down. Own it.</div>
+      </div>
+      <div style="padding:16px 16px 0;">
+        <div class="mood-row" id="moodRow">
+          <button class="mood-btn" data-m="🙏" onclick="pickMood(this)">🙏</button>
+          <button class="mood-btn" data-m="💪" onclick="pickMood(this)">💪</button>
+          <button class="mood-btn" data-m="😤" onclick="pickMood(this)">😤</button>
+          <button class="mood-btn" data-m="😌" onclick="pickMood(this)">😌</button>
+          <button class="mood-btn" data-m="😔" onclick="pickMood(this)">😔</button>
+        </div>
+        <textarea class="journal-ta" id="journalTA" placeholder="What's on your mind today? What did God show you? How did training feel?"></textarea>
+        <button class="mic-btn" id="journalMicBtn" onclick="toggleJournalMic()">
+          <div class="mic-dot"></div><span id="journalMicLabel">Hold to speak</span>
+        </button>
+        <div class="mic-status" id="journalMicStatus"></div>
+        <button class="save-btn" onclick="saveJournal()">Save Entry</button>
+      </div>
+      <div style="height:16px;"></div>
+      <div class="section-head">Past Entries</div>
+      <div class="journal-list" id="journalList"></div>
+    </div>
+
+    <!-- ══ PHILOSOPHY ══ -->
+    <div class="screen" id="s-phil">
+      <div class="phil-screen">
+        <div class="phil-title">The Way</div>
+        <div class="phil-sub">What I believe. How I live.</div>
+
+        <div class="phil-rule"><div class="phil-num">01</div><div class="phil-text">Faith first. Before food, before phone, before the bar — <em>stillness with God.</em></div></div>
+        <div class="phil-rule"><div class="phil-num">02</div><div class="phil-text">The gym is stewardship. Your body is not yours to neglect. <em>Train it like it belongs to God.</em></div></div>
+        <div class="phil-rule"><div class="phil-num">03</div><div class="phil-text">Fuel with intention. <em>Matcha, not chaos.</em> Real food, not convenience.</div></div>
+        <div class="phil-rule"><div class="phil-num">04</div><div class="phil-text">Build something every day. Read something every day. <em>Compound quietly.</em></div></div>
+        <div class="phil-rule"><div class="phil-num">05</div><div class="phil-text">Social media is the <em>reward</em> for a day well lived — not how you start it.</div></div>
+        <div class="phil-rule"><div class="phil-num">06</div><div class="phil-text"><em>Never miss twice.</em> One missed day is rest. Two is a decision about who you are.</div></div>
+        <div class="phil-rule"><div class="phil-num">07</div><div class="phil-text">Sunday is sacred — <em>fast, rest, reset.</em> Let your body and mind come back to zero.</div></div>
+
+        <div class="phil-divider"></div>
+        <div class="section-head" style="padding:0 0 14px;">Scripture That Drives Me</div>
+
+        <div class="phil-verse-block">
+          <div class="phil-verse-t">"Whatever you do, work at it with all your heart, as working for the Lord, not for human masters."</div>
+          <div class="phil-verse-r">Colossians 3:23</div>
+        </div>
+        <div class="phil-verse-block">
+          <div class="phil-verse-t">"I can do all this through him who gives me strength."</div>
+          <div class="phil-verse-r">Philippians 4:13</div>
+        </div>
+        <div class="phil-verse-block">
+          <div class="phil-verse-t">"Do you not know that your bodies are temples of the Holy Spirit? Therefore honor God with your bodies."</div>
+          <div class="phil-verse-r">1 Corinthians 6:19–20</div>
+        </div>
+        <div class="phil-verse-block">
+          <div class="phil-verse-t">"Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go."</div>
+          <div class="phil-verse-r">Joshua 1:9</div>
+        </div>
+        <div class="phil-verse-block">
+          <div class="phil-verse-t">"Diligent hands will rule, but laziness ends in forced labor."</div>
+          <div class="phil-verse-r">Proverbs 12:24</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 100 DAY CHALLENGE ══ -->
+    <div class="screen" id="s-challenge">
+      <div class="topbar">
+        <div class="topbar-label">June 1 → September 9, 2026</div>
+        <div class="topbar-title">100 Days</div>
+        <div class="topbar-sub" id="chalSubtitle">Mark each day. Stay the course.</div>
+      </div>
+
+      <!-- Live countdown inside this tab too -->
+      <div style="margin:16px 16px 0;" id="chalCountdown"></div>
+
+      <!-- Pass/Fail grid -->
+      <div style="padding:16px 16px 8px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;">Your 100 Days</div>
+        <div style="display:flex;gap:16px;">
+          <div style="display:flex;align-items:center;gap:5px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--green);"></div><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">PASS</span></div>
+          <div style="display:flex;align-items:center;gap:5px;"><div style="width:10px;height:10px;border-radius:3px;background:#8a3a3a;"></div><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">FAIL</span></div>
+          <div style="display:flex;align-items:center;gap:5px;"><div style="width:10px;height:10px;border-radius:3px;background:var(--dim);border:1px solid var(--border);"></div><span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">FUTURE</span></div>
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div style="margin:0 16px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:0;" id="chalStats">
+        <div style="flex:1;text-align:center;border-right:1px solid var(--border);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:var(--green);" id="chalPassCount">0</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Passed</div>
+        </div>
+        <div style="flex:1;text-align:center;border-right:1px solid var(--border);">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:#8a4a4a;" id="chalFailCount">0</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Failed</div>
+        </div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:var(--gold);" id="chalStreakCount">0</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;">Streak</div>
+        </div>
+      </div>
+
+      <!-- Day grid -->
+      <div style="padding:0 16px 20px;">
+        <div id="chalGrid" style="display:grid;grid-template-columns:repeat(10,1fr);gap:5px;"></div>
+      </div>
+    </div>
+
+    <!-- ══ BIBLE / PRAYER ══ -->
+    <div class="screen" id="s-bible">
+      <div class="topbar">
+        <div class="topbar-label">Daily Prayer</div>
+        <div class="topbar-title">ሰላም ለኪ</div>
+        <div class="topbar-sub">Hail Mary — in Ge'ez &amp; Amharic</div>
+      </div>
+
+      <div style="padding:0 16px 24px;">
+
+        <!-- Ge'ez / Amharic prayer card -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:20px;margin-bottom:16px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:14px;">Hail Mary · ሰላም ለኪ</div>
+          <div style="font-size:22px;line-height:2.1;color:var(--cream);font-weight:400;letter-spacing:0.02em;" id="geezText">
+            ሰላም ለኪ<br>
+            ኢንዘ ኒሰግድ<br>
+            ነብሌኪ<br>
+            ማርያም እሜኔ<br>
+            ናስተቤዕቅዊ<br>
+            ዕም-አርዌ ነዓዊ<br>
+            ተማህፀን ቢኪ<br>
+            ቤኢንተ ሃናህ እሚኪ<br>
+            ወኢያቄም አቡኪ<br>
+            ማህበሬነ ዮም ዲንጊ<br>
+            ባርኪ
+          </div>
+        </div>
+
+        <!-- Transliteration -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:12px;">Transliteration</div>
+          <div style="font-size:16px;line-height:2.2;color:var(--sage, #b8c9b0);font-style:italic;">
+            Selam lechi<br>
+            inze nisegid<br>
+            neblechi<br>
+            Mariam Emene<br>
+            nastebe'quachi<br>
+            Em-arwie Ne'awi<br>
+            temahatsen bichi<br>
+            Beinte Hannah Emichi<br>
+            weEyaqem Abuchi<br>
+            Mahberene yom Dingil<br>
+            barichi
+          </div>
+        </div>
+
+        <!-- English meaning -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:12px;">English Meaning</div>
+          <div style="font-size:15px;line-height:2;color:var(--cream);">
+            Hail to you<br>
+            as we bow before you<br>
+            we proclaim you<br>
+            Mary, our Mother<br>
+            we seek your intercession<br>
+            against the ancient serpent<br>
+            take our refuge in you<br>
+            through Hannah your mother<br>
+            and Joachim your father<br>
+            bless our congregation today, O Virgin<br>
+            bless us
+          </div>
+        </div>
+
+        <!-- Daily verse reminder -->
+        <div style="background:rgba(200,168,106,0.06);border:1px solid rgba(200,168,106,0.2);border-radius:10px;padding:16px;margin-bottom:16px;" id="bibleVerseToday"></div>
+
+        <!-- Prayer tracker -->
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:10px;">Did you pray today?</div>
+        <div style="display:flex;gap:10px;margin-bottom:20px;">
+          <button onclick="markPrayer(true)" id="prayYesBtn" style="flex:1;padding:14px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);transition:all 0.2s;">🙏 Yes</button>
+          <button onclick="markPrayer(false)" id="prayNoBtn" style="flex:1;padding:14px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);transition:all 0.2s;">Not yet</button>
+        </div>
+
+        <!-- Prayer streak -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;color:var(--gold);" id="prayStreak">0</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">day prayer streak</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MEAL & NUTRITION ══ -->
+    <div class="screen" id="s-meal">
+      <div class="topbar">
+        <div class="topbar-label">Nutrition</div>
+        <div class="topbar-title">Fuel</div>
+        <div class="topbar-sub">Track what you eat. Hit your goals.</div>
+      </div>
+
+      <!-- Mode selector: Cutting / Recomp -->
+      <div style="padding:16px 16px 0;display:flex;gap:8px;">
+        <button class="meal-mode-btn on" id="modeBtn_cutting" onclick="setMode('cutting')">🔥 Cutting</button>
+        <button class="meal-mode-btn" id="modeBtn_recomp" onclick="setMode('recomp')">⚖️ Recomp</button>
+        <button class="meal-mode-btn" id="modeBtn_bmi" onclick="setMode('bmi')" style="margin-left:auto;">📏 BMI</button>
+      </div>
+
+      <!-- Intermittent Fasting Timer -->
+      <div style="margin:14px 16px 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;" id="ifTimer"></div>
+
+      <!-- ── CUTTING PANEL ── -->
+      <div id="mealPanel_cutting" class="meal-panel on">
+        <!-- Diet type tabs -->
+        <div style="padding:12px 16px 0;display:flex;gap:8px;">
+          <button class="diet-tab on" id="dietTab_cutting_nonvegan" onclick="setDiet('cutting','nonvegan')">🥩 Non-Vegan</button>
+          <button class="diet-tab" id="dietTab_cutting_vegan" onclick="setDiet('cutting','vegan')">🌱 Vegan</button>
+        </div>
+
+        <!-- Calorie goal bar -->
+        <div id="macroBar_cutting" style="margin:12px 16px 0;"></div>
+
+        <!-- Daily log -->
+        <div style="padding:8px 16px 0;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;">Today's Log</div>
+        <div id="mealLog_cutting" style="padding:8px 16px 0;"></div>
+
+        <!-- Add custom food -->
+        <div style="padding:8px 16px 16px;">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Add Food</div>
+            <input id="foodName_cutting" placeholder="Food name" style="margin-bottom:8px;"/>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px;">
+              <input id="foodCal_cutting" type="number" placeholder="kcal" inputmode="numeric"/>
+              <input id="foodPro_cutting" type="number" placeholder="g protein" inputmode="decimal"/>
+              <input id="foodFat_cutting" type="number" placeholder="g fat" inputmode="decimal"/>
+              <input id="foodCarb_cutting" type="number" placeholder="g carb" inputmode="decimal"/>
+            </div>
+            <button onclick="addFood('cutting')" style="width:100%;padding:12px;background:var(--gold);color:var(--bg);border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Meal suggestions -->
+        <div style="padding:0 16px 8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;">Meal Ideas</div>
+        <div id="mealSuggestions_cutting" style="padding:0 16px 20px;"></div>
+      </div>
+
+      <!-- ── RECOMP PANEL ── -->
+      <div id="mealPanel_recomp" class="meal-panel">
+        <div style="padding:12px 16px 0;display:flex;gap:8px;">
+          <button class="diet-tab on" id="dietTab_recomp_nonvegan" onclick="setDiet('recomp','nonvegan')">🥩 Non-Vegan</button>
+          <button class="diet-tab" id="dietTab_recomp_vegan" onclick="setDiet('recomp','vegan')">🌱 Vegan</button>
+        </div>
+        <div id="macroBar_recomp" style="margin:12px 16px 0;"></div>
+        <div style="padding:8px 16px 0;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;">Today's Log</div>
+        <div id="mealLog_recomp" style="padding:8px 16px 0;"></div>
+        <div style="padding:8px 16px 16px;">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">Add Food</div>
+            <input id="foodName_recomp" placeholder="Food name" style="margin-bottom:8px;"/>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:10px;">
+              <input id="foodCal_recomp" type="number" placeholder="kcal" inputmode="numeric"/>
+              <input id="foodPro_recomp" type="number" placeholder="g protein" inputmode="decimal"/>
+              <input id="foodFat_recomp" type="number" placeholder="g fat" inputmode="decimal"/>
+              <input id="foodCarb_recomp" type="number" placeholder="g carb" inputmode="decimal"/>
+            </div>
+            <button onclick="addFood('recomp')" style="width:100%;padding:12px;background:var(--gold);color:var(--bg);border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;">+ Add</button>
+          </div>
+        </div>
+        <div style="padding:0 16px 8px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;">Meal Ideas</div>
+        <div id="mealSuggestions_recomp" style="padding:0 16px 20px;"></div>
+      </div>
+
+      <!-- ── BMI PANEL ── -->
+      <div id="mealPanel_bmi" class="meal-panel">
+        <div style="padding:16px 16px 0;">
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;">BMI Calculator</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+              <div>
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">HEIGHT (cm)</div>
+                <input id="bmiHeight" type="number" placeholder="e.g. 170" inputmode="decimal"/>
+              </div>
+              <div>
+                <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">WEIGHT (kg)</div>
+                <input id="bmiWeight" type="number" placeholder="e.g. 70" inputmode="decimal"/>
+              </div>
+            </div>
+            <div style="margin-bottom:12px;">
+              <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">AGE</div>
+              <input id="bmiAge" type="number" placeholder="e.g. 22" inputmode="numeric"/>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+              <button onclick="setBmiSex('female')" id="bmiF" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);transition:all 0.2s;">Female</button>
+              <button onclick="setBmiSex('male')" id="bmiM" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);transition:all 0.2s;">Male</button>
+            </div>
+            <button onclick="calcBMI()" style="width:100%;padding:13px;background:var(--gold);color:var(--bg);border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;">Calculate</button>
+          </div>
+
+          <!-- BMI Result -->
+          <div id="bmiResult" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;"></div>
+
+          <!-- TDEE / Calorie suggestion -->
+          <div id="tdeeResult" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bnav">
+    <button class="bnav-btn on" onclick="nav('today',this)"><span class="bnav-icon">◉</span>Today</button>
+    <button class="bnav-btn" onclick="nav('workout',this)"><span class="bnav-icon">🏋️</span>Lift</button>
+    <button class="bnav-btn" onclick="nav('meal',this)"><span class="bnav-icon">🥗</span>Fuel</button>
+    <button class="bnav-btn" onclick="nav('challenge',this)"><span class="bnav-icon">🔥</span>100 Days</button>
+    <button class="bnav-btn" onclick="nav('bible',this)"><span class="bnav-icon">✝</span>Prayer</button>
+    <button class="bnav-btn" onclick="nav('journal',this)"><span class="bnav-icon">📓</span>Journal</button>
+    <button class="bnav-btn" onclick="nav('phil',this)"><span class="bnav-icon">✦</span>The Way</button>
+  </nav>
+</div>
+
+<!-- Journal Full View -->
+<div class="journal-entry-full" id="jefPanel">
+  <div class="jef-head">
+    <button class="jef-back" onclick="closeJEF()">‹</button>
+    <div class="jef-date" id="jefDate"></div>
+    <button class="jef-del" onclick="deleteEntry()">Delete</button>
+  </div>
+  <div class="jef-body">
+    <div class="jef-mood" id="jefMood"></div>
+    <div class="jef-text" id="jefText"></div>
+  </div>
+</div>
+
+<script>
+// ══ DATA ════════════════════════════════════════════════
+
+const DAILY_VERSES = {
+  0: { text: "Be still and know that I am God.", ref: "Psalm 46:10" }, // Sun
+  1: { text: "I can do all this through him who gives me strength.", ref: "Philippians 4:13" },
+  2: { text: "Do you not know that your bodies are temples of the Holy Spirit? Honor God with your bodies.", ref: "1 Corinthians 6:19–20" },
+  3: { text: "Whatever you do, work at it with all your heart, as working for the Lord.", ref: "Colossians 3:23" },
+  4: { text: "Diligent hands will rule, but laziness ends in forced labor.", ref: "Proverbs 12:24" },
+  5: { text: "Be strong and courageous. Do not be afraid, for the Lord your God will be with you wherever you go.", ref: "Joshua 1:9" },
+  6: { text: "Those who hope in the Lord will renew their strength. They will soar on wings like eagles.", ref: "Isaiah 40:31" },
+};
+
+const PILLARS = [
+  { id:"faith", label:"Faith", color:"#c8a86a", time:"4:30 AM",
+    verse:"\"Be still and know that I am God.\" — Psalm 46:10",
+    tasks:[
+      {id:"prayer", label:"Morning prayer", meta:"5 min — before the phone"},
+      {id:"bible_read", label:"Read the Bible", meta:"15–20 min — one passage slowly"},
+      {id:"gratitude", label:"3 things I'm grateful for", meta:"write them down"},
+    ]},
+  { id:"gym", label:"Gym / Movement", color:"#6a9e6a", time:"5:15 AM",
+    verse:"\"Train yourself to be godly. Physical training has some value.\" — 1 Tim 4:7–8",
+    tasks:[
+      {id:"workout_done", label:"Complete today's training", meta:"full session, no shortcuts"},
+      {id:"hydrate", label:"Hydrate properly", meta:"1L during + 500ml after"},
+    ]},
+  { id:"fuel", label:"Fuel", color:"#a86a4a", time:"7:00 AM",
+    verse:"\"Whether you eat or drink, do it all for the glory of God.\" — 1 Cor 10:31",
+    tasks:[
+      {id:"matcha", label:"Morning matcha (not coffee)", meta:"intentional — not rushed"},
+      {id:"meal1", label:"First whole meal", meta:"protein + greens first"},
+      {id:"fast_window", label:"Honor your eating window", meta:"no mindless snacking"},
+    ]},
+  { id:"skill", label:"Skill", color:"#4a7aaa", time:"8:00 AM",
+    verse:"\"Diligent hands will rule.\" — Proverbs 12:24",
+    tasks:[
+      {id:"build", label:"Build or code something", meta:"30–45 min — ship something small"},
+      {id:"read", label:"Read a real book", meta:"20 min — no feeds, no scrolling"},
+    ]},
+];
+
+const WEEK_PROGRAMS = [
+  { day:"Mon", label:"Full Body", focus:"Compound foundation — every major pattern", color:"#c8a86a",
+    exercises:[
+      {id:"fb_squat", name:"Barbell Back Squat", target:"4×5 — heavy", muscle:"Legs / Posterior chain"},
+      {id:"fb_bench", name:"Flat Bench Press", target:"4×5 — heavy", muscle:"Chest / Triceps"},
+      {id:"fb_row", name:"Barbell Row", target:"3×8", muscle:"Back / Biceps"},
+      {id:"fb_ohp", name:"Overhead Press", target:"3×8", muscle:"Shoulders / Triceps"},
+      {id:"fb_rdl", name:"Romanian Deadlift", target:"3×10", muscle:"Hamstrings / Glutes"},
+      {id:"fb_pullup", name:"Pull-Ups", target:"3×max", muscle:"Lats / Biceps"},
+    ]},
+  { day:"Tue", label:"Leg Day", focus:"Quads, hamstrings, glutes — the base of everything", color:"#6a9e6a",
+    exercises:[
+      {id:"leg_hipthrust", name:"Hip Thrust", target:"4×10 — heavy, pause at top", muscle:"Glutes"},
+      {id:"leg_squat", name:"Barbell Back Squat", target:"4×6 — build the pattern", muscle:"Quads / Glutes"},
+      {id:"leg_legpress", name:"Leg Press", target:"3×12", muscle:"Quads / Glutes"},
+      {id:"leg_legcurl", name:"Lying Leg Curl", target:"3×12", muscle:"Hamstrings"},
+      {id:"leg_bulgariansplit", name:"Bulgarian Split Squat", target:"3×8 each", muscle:"Quads / Glutes"},
+      {id:"leg_calfpress", name:"Calf Press / Raises", target:"4×15", muscle:"Calves"},
+    ]},
+  { day:"Wed", label:"Push Day", focus:"Chest, shoulders, triceps — press everything", color:"#aa6a4a",
+    exercises:[
+      {id:"push_incline", name:"Incline Barbell Press", target:"4×6", muscle:"Upper Chest"},
+      {id:"push_military", name:"Military Press (OHP)", target:"4×6 — standing, strict", muscle:"Shoulders"},
+      {id:"push_lateral", name:"Lateral Raises", target:"4×15 — controlled", muscle:"Side Delts"},
+      {id:"push_dbpress", name:"Dumbbell Flat Press", target:"3×10", muscle:"Chest"},
+      {id:"push_facepull", name:"Face Pulls", target:"3×15", muscle:"Rear Delts"},
+      {id:"push_tricepdown", name:"Tricep Pushdown", target:"3×12", muscle:"Triceps"},
+    ]},
+  { day:"Thu", label:"Pull + Deadlift", focus:"Posterior chain and pulling strength", color:"#4a6aaa",
+    exercises:[
+      {id:"pull_dead", name:"Conventional Deadlift", target:"4×3–5 — max effort", muscle:"Full posterior chain"},
+      {id:"pull_latpull", name:"Lat Pulldown", target:"4×10", muscle:"Lats"},
+      {id:"pull_trow", name:"T-Bar Row", target:"4×8", muscle:"Mid Back / Lats"},
+      {id:"pull_bicep_curl", name:"Barbell / EZ Bar Curl", target:"3×10", muscle:"Biceps"},
+      {id:"pull_hammer", name:"Hammer Curl", target:"3×12 each", muscle:"Brachialis / Forearms"},
+      {id:"pull_facepull2", name:"Face Pulls", target:"3×15", muscle:"Rear Delts / External rotation"},
+    ]},
+  { day:"Fri", label:"Glutes + Cardio", focus:"Glute isolation, then steady-state cardio", color:"#8a6aaa",
+    exercises:[
+      {id:"gc_hipthrust", name:"Hip Thrust", target:"4×12 — squeeze hard", muscle:"Glutes"},
+      {id:"gc_cablekick", name:"Cable Kickback", target:"3×15 each", muscle:"Glutes"},
+      {id:"gc_sumo", name:"Sumo Deadlift", target:"3×10 — glute focus", muscle:"Glutes / Inner thigh"},
+      {id:"gc_abductor", name:"Machine Abductor", target:"3×15", muscle:"Glutes / Hips"},
+      {id:"gc_cardio", name:"Steady-State Cardio", target:"30–45 min", muscle:"Incline walk / bike / row"},
+    ]},
+  { day:"Sat", label:"Pilates Day", focus:"Mobility, core, mind-body connection", color:"#6aaaa0", rest:false,
+    exercises:[
+      {id:"pil_hundred", name:"The Hundred", target:"1×100 breaths", muscle:"Core activation"},
+      {id:"pil_rollup", name:"Roll Up", target:"3×10", muscle:"Core / Spine"},
+      {id:"pil_legcircle", name:"Single Leg Circle", target:"3×8 each", muscle:"Hips / Core"},
+      {id:"pil_bridge", name:"Glute Bridge Pulses", target:"3×30 pulses", muscle:"Glutes / Core"},
+      {id:"pil_sidekick", name:"Side Kick Series", target:"3×12 each", muscle:"Outer Glutes"},
+      {id:"pil_stretch", name:"Full Body Stretch", target:"10 min", muscle:"Recovery"},
+    ]},
+  { day:"Sun", label:"Fast + Rest", focus:"24-hour fast. Stillness. Spiritual reset.", color:"#8888aa", rest:true, exercises:[] },
+];
+
+// ══ STORAGE HELPERS ════════════════════════════════════
+const get = k => { try { return JSON.parse(localStorage.getItem(k)||"null"); } catch { return null; } };
+const set = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+const todayKey = () => new Date().toISOString().split("T")[0];
+const getChecked = () => get("mw_checked") || {};
+const saveChecked = v => set("mw_checked", v);
+const getWorkoutLog = () => get("mw_wlog") || {};
+const saveWorkoutLog = v => set("mw_wlog", v);
+const getJournals = () => get("mw_journals") || [];
+const saveJournals = v => set("mw_journals", v);
+
+// ══ NAVIGATION ══════════════════════════════════════════
+function nav(id, btn) {
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));
+  document.getElementById("s-"+id).classList.add("on");
+  document.querySelectorAll(".bnav-btn").forEach(b=>b.classList.remove("on"));
+  if(btn) btn.classList.add("on");
+  document.getElementById("content").scrollTop = 0;
+  if(id==="challenge") { renderChallengeGrid(); renderChalCountdown(); }
+  if(id==="bible") renderPrayerTab();
+  if(id==="meal") { renderMealInit(); }
+}
+
+// ══ TODAY SCREEN ════════════════════════════════════════
+function renderToday() {
+  const d = new Date();
+  const dow = d.getDay();
+  const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const shortDays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const dayProgram = WEEK_PROGRAMS[dow === 0 ? 6 : dow - 1];
+
+  document.getElementById("todayDate").textContent =
+    d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}).toUpperCase();
+  document.getElementById("todayDay").textContent = days[dow];
+  document.getElementById("todayFocus").textContent = dayProgram ? `▸ ${dayProgram.label} — ${dayProgram.focus}` : "";
+
+  // Verse
+  const v = DAILY_VERSES[dow];
+  document.getElementById("verseCard").innerHTML =
+    `<div class="verse-text">"${v.text}"</div><div class="verse-ref">— ${v.ref}</div>`;
+
+  // Week strip
+  const today = new Date(); const todayISO = todayKey();
+  const dayOfWeek = today.getDay();
+  const monday = new Date(today); monday.setDate(today.getDate() - ((dayOfWeek+6)%7));
+  const checked = getChecked();
+  const total = PILLARS.reduce((s,p)=>s+p.tasks.length,0);
+  const strip = document.getElementById("weekStrip");
+  const wdays = ["M","T","W","T","F","S","S"];
+  strip.innerHTML = Array.from({length:7},(_,i)=>{
+    const dk = new Date(monday); dk.setDate(monday.getDate()+i);
+    const dkStr = dk.toISOString().split("T")[0];
+    const done = PILLARS.reduce((s,p)=>s+p.tasks.filter(t=>!!checked[`${dkStr}_${t.id}`]).length,0);
+    const ratio = done/total;
+    const isTd = dkStr===todayISO;
+    const cls = ratio===1?"full":ratio>0?"partial":"";
+    return `<div class="wday">
+      <div class="wday-dot ${cls} ${isTd?"today":""}">${ratio===1?"✓":""}</div>
+      <div class="wday-lbl ${isTd?"today":""}">${wdays[i]}</div>
+    </div>`;
+  }).join("");
+
+  renderPillars();
+  renderRing();
+}
+
+function renderRing() {
+  const checked = getChecked(); const dk = todayKey();
+  const total = PILLARS.reduce((s,p)=>s+p.tasks.length,0);
+  const done = PILLARS.reduce((s,p)=>s+p.tasks.filter(t=>!!checked[`${dk}_${t.id}`]).length,0);
+  const pct = Math.round(done/total*100);
+  const circ = 175.9;
+  document.getElementById("ringArc").setAttribute("stroke-dasharray",`${circ*pct/100} ${circ}`);
+  document.getElementById("ringPct").textContent = pct+"%";
+}
+
+function renderPillars() {
+  const checked = getChecked(); const dk = todayKey();
+  document.getElementById("pillarCards").innerHTML = PILLARS.map(p=>{
+    const done = p.tasks.filter(t=>!!checked[`${dk}_${t.id}`]).length;
+    const allDone = done===p.tasks.length;
+    return `<div class="pillar-card ${allDone?"done":""}" id="pc_${p.id}">
+      <div class="pillar-head" onclick="togglePillar('${p.id}')">
+        <div class="pillar-accent" style="background:${p.color}"></div>
+        <div class="pillar-name" style="color:${p.color}">${p.label}</div>
+        <div class="pillar-time">${p.time}</div>
+        <div class="pillar-frac" style="color:${p.color}">${done}/${p.tasks.length}</div>
+        <div class="pillar-chev">▾</div>
+      </div>
+      <div class="pillar-body">
+        <div class="pillar-verse">${p.verse}</div>
+        ${p.tasks.map(t=>{
+          const on=!!checked[`${dk}_${t.id}`];
+          return `<div class="task-row" onclick="toggleTask('${t.id}')">
+            <div class="task-chk ${on?"on":""}"></div>
+            <div class="task-inf">
+              <div class="task-nm ${on?"done":""}">${t.label}</div>
+              <div class="task-mt">${t.meta}</div>
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function togglePillar(id) {
+  document.getElementById("pc_"+id).classList.toggle("open");
+}
+
+function toggleTask(taskId) {
+  const checked = getChecked();
+  const key = `${todayKey()}_${taskId}`;
+  checked[key] = !checked[key];
+  saveChecked(checked);
+  renderPillars(); renderRing();
+  // refresh week strip
+  const today = new Date(); const todayISO = todayKey();
+  const dayOfWeek = today.getDay();
+  const monday = new Date(today); monday.setDate(today.getDate()-((dayOfWeek+6)%7));
+  const total = PILLARS.reduce((s,p)=>s+p.tasks.length,0);
+  const wdays = ["M","T","W","T","F","S","S"];
+  const strip = document.getElementById("weekStrip");
+  strip.innerHTML = Array.from({length:7},(_,i)=>{
+    const dk2 = new Date(monday); dk2.setDate(monday.getDate()+i);
+    const dkStr = dk2.toISOString().split("T")[0];
+    const c2 = getChecked();
+    const done2 = PILLARS.reduce((s,p)=>s+p.tasks.filter(t=>!!c2[`${dkStr}_${t.id}`]).length,0);
+    const ratio = done2/total; const isTd = dkStr===todayISO;
+    const cls = ratio===1?"full":ratio>0?"partial":"";
+    return `<div class="wday">
+      <div class="wday-dot ${cls} ${isTd?"today":""}">${ratio===1?"✓":""}</div>
+      <div class="wday-lbl ${isTd?"today":""}">${wdays[i]}</div>
+    </div>`;
+  }).join("");
+}
+
+// ══ WORKOUT SCREEN ══════════════════════════════════════
+function renderWorkout() {
+  const tabs = document.getElementById("wdTabs");
+  const panels = document.getElementById("wdPanels");
+  tabs.innerHTML = WEEK_PROGRAMS.map((wp,i)=>
+    `<button class="wdtab ${wp.rest?"rest":""} ${i===0?"on":""}" onclick="switchWD(${i})">${wp.day}<br><span style="font-size:10px;font-weight:400;">${wp.label}</span></button>`
+  ).join("");
+  panels.innerHTML = WEEK_PROGRAMS.map((wp,i)=> renderWDPanel(wp,i)).join("");
+}
+
+function renderWDPanel(wp, i) {
+  const dk = todayKey();
+  const log = getWorkoutLog();
+
+  if(wp.rest) {
+    return `<div class="workout-panel ${i===0?"on":""}" id="wdp_${i}">
+      <div class="wp-rest-box">
+        <div class="wp-rest-icon">🙏</div>
+        <div class="wp-rest-title">Sunday — Sacred Rest</div>
+        <div class="wp-rest-desc">24-hour fast. No training. Let your body rebuild.<br><br>"Be still and know that I am God." — Psalm 46:10</div>
+      </div>
+    </div>`;
+  }
+
+  const exHTML = wp.exercises.map((ex, ei) => {
+    const sets = log[`${dk}_${ex.id}_sets`] || [
+      {w:"",r:"",done:false},{w:"",r:"",done:false},{w:"",r:"",done:false}
+    ];
+    const hasPR = log[ex.id+"_pr"];
+    const hasTarget = log[ex.id+"_next_target"];
+    const doneCount = sets.filter(s=>s.done).length;
+
+    // PR banner
+    const prBanner = hasPR ? `
+      <div class="ex-pr-banner">
+        <div><div class="ex-pr-left">▲ Personal Record</div><div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green);margin-top:1px;">Best logged lift</div></div>
+        <div class="ex-pr-val">${log[ex.id+"_pr"]}kg × ${log[ex.id+"_pr_reps"]}</div>
+      </div>` : "";
+
+    // Target reminder banner
+    const targetBanner = hasTarget ? `
+      <div class="ex-target-banner">
+        <div class="ex-target-text">🎯 This week's target (you set this last week)</div>
+        <div class="ex-target-val">${log[ex.id+"_next_target"]}</div>
+      </div>` : "";
+
+    // Sets
+    const setsHTML = sets.map((s,si)=>
+      `<div class="set-item ${s.done?"set-done":""}" id="si_${i}_${ei}_${si}">
+        <div class="si-num">${si+1}</div>
+        <input class="si-inp" type="number" placeholder="kg" value="${s.w||""}" step="0.5" inputmode="decimal"
+          id="winp_${i}_${ei}_${si}" oninput="logSet('${ex.id}',${si},'w',this.value,${i})"/>
+        <input class="si-inp" type="number" placeholder="reps" value="${s.r||""}" inputmode="numeric"
+          id="rinp_${i}_${ei}_${si}" oninput="logSet('${ex.id}',${si},'r',this.value,${i})"/>
+        <div class="si-check ${s.done?"on":""}" id="sck_${i}_${ei}_${si}" onclick="toggleSetDone('${ex.id}',${si},${i},${ei})">✓</div>
+      </div>`
+    ).join("");
+
+    return `<div class="ex-card ${doneCount>0&&doneCount===sets.length?"ex-active":""}" id="ex_${i}_${ei}">
+      <div class="ex-head" onclick="toggleEx(${i},${ei})">
+        <div class="ex-accent-bar" style="background:${wp.color}"></div>
+        <div class="ex-head-inner">
+          <div class="ex-num">${ei+1}</div>
+          <div class="ex-info">
+            <div class="ex-name">${ex.name}</div>
+            <div class="ex-meta">
+              <span class="ex-tag">${ex.target}</span>
+              <span class="ex-tag">${ex.muscle}</span>
+            </div>
+          </div>
+          <div class="ex-summary" style="color:${doneCount>0?wp.color:"var(--muted)"}">
+            ${doneCount}/${sets.length}<br>sets
+          </div>
+          <div class="ex-chev">▾</div>
+        </div>
+      </div>
+      <div class="ex-body">
+        ${prBanner}${targetBanner}
+
+        <!-- Voice log card -->
+        <div class="voice-log-card">
+          <div class="vlc-title">🎤 Voice Log — say "20 kg 5 reps"</div>
+          <button class="voice-log-btn" id="vlb_${i}_${ei}" onclick="voiceLogSet(${i},${ei},'${ex.id}')">
+            <span class="vlb-icon">🎙</span>
+            <span id="vlbl_${i}_${ei}">Tap to speak a set</span>
+          </button>
+          <div class="vlb-transcript" id="vlbt_${i}_${ei}"></div>
+        </div>
+
+        <!-- Column headers -->
+        <div style="display:grid;grid-template-columns:22px 1fr 1fr 34px;gap:6px;padding:0 10px 4px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">
+          <div>#</div><div>KG</div><div>REPS</div><div>✓</div>
+        </div>
+
+        <div class="sets-grid" id="setsGrid_${i}_${ei}">${setsHTML}</div>
+        <button class="add-set-btn" onclick="addSet('${ex.id}',${i},${ei})">+ Add Set</button>
+
+        <!-- Next week target -->
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">Set next week's target</div>
+          <div class="next-target-row">
+            <input type="text" id="nxt_${i}_${ei}_${ex.id}" placeholder='e.g. "25kg × 5"' value="${log[ex.id+"_next_target"]||""}"/>
+            <button class="set-target-btn" onclick="saveTarget('${ex.id}','nxt_${i}_${ei}_${ex.id}')">Save →</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  return `<div class="workout-panel ${i===0?"on":""}" id="wdp_${i}">
+    <div class="wp-title" style="color:${wp.color}">${wp.label}</div>
+    <div class="wp-focus">${wp.focus}</div>
+    ${exHTML}
+  </div>`;
+}
+
+function switchWD(i) {
+  document.querySelectorAll(".wdtab").forEach((t,j)=>{ t.classList.toggle("on",j===i); });
+  document.querySelectorAll(".workout-panel").forEach((p,j)=>{ p.classList.toggle("on",j===i); });
+}
+
+function toggleEx(pi, ei) {
+  document.getElementById(`ex_${pi}_${ei}`).classList.toggle("open");
+}
+
+function logSet(exId, si, field, val, pi) {
+  const dk = todayKey(); const log = getWorkoutLog();
+  const key = `${dk}_${exId}_sets`;
+  if(!log[key]) log[key] = [{w:"",r:"",done:false},{w:"",r:"",done:false},{w:"",r:"",done:false}];
+  while(log[key].length <= si) log[key].push({w:"",r:"",done:false});
+  log[key][si][field] = val;
+  // PR check — only when both weight and reps are set
+  const s = log[key][si];
+  if(s.w && s.r) {
+    const curPR = parseFloat(log[exId+"_pr"]||0);
+    if(parseFloat(s.w) > curPR) {
+      log[exId+"_pr"] = s.w;
+      log[exId+"_pr_reps"] = s.r;
+    }
+  }
+  saveWorkoutLog(log);
+}
+
+function toggleSetDone(exId, si, pi, ei) {
+  const dk = todayKey(); const log = getWorkoutLog();
+  const key = `${dk}_${exId}_sets`;
+  if(!log[key]) log[key] = [];
+  while(log[key].length <= si) log[key].push({w:"",r:"",done:false});
+  log[key][si].done = !log[key][si].done;
+  saveWorkoutLog(log);
+  const chk = document.getElementById(`sck_${pi}_${ei}_${si}`);
+  const row = document.getElementById(`si_${pi}_${ei}_${si}`);
+  if(chk) chk.classList.toggle("on", log[key][si].done);
+  if(row) row.classList.toggle("set-done", log[key][si].done);
+  // Mark card active if all done
+  const sets = log[key];
+  const card = document.getElementById(`ex_${pi}_${ei}`);
+  if(card) card.classList.toggle("ex-active", sets.every(s=>s.done));
+}
+
+function addSet(exId, pi, ei) {
+  const dk = todayKey(); const log = getWorkoutLog();
+  const key = `${dk}_${exId}_sets`;
+  if(!log[key]) log[key] = [];
+  const si = log[key].length;
+  log[key].push({w:"",r:"",done:false});
+  saveWorkoutLog(log);
+  const container = document.getElementById(`setsGrid_${pi}_${ei}`);
+  const row = document.createElement("div");
+  row.className = "set-item";
+  row.id = `si_${pi}_${ei}_${si}`;
+  row.innerHTML = `
+    <div class="si-num">${si+1}</div>
+    <input class="si-inp" type="number" placeholder="kg" step="0.5" inputmode="decimal"
+      id="winp_${pi}_${ei}_${si}" oninput="logSet('${exId}',${si},'w',this.value,${pi})"/>
+    <input class="si-inp" type="number" placeholder="reps" inputmode="numeric"
+      id="rinp_${pi}_${ei}_${si}" oninput="logSet('${exId}',${si},'r',this.value,${pi})"/>
+    <div class="si-check" id="sck_${pi}_${ei}_${si}" onclick="toggleSetDone('${exId}',${si},${pi},${ei})">✓</div>`;
+  container.appendChild(row);
+}
+
+function saveTarget(exId, inputId) {
+  const val = document.getElementById(inputId).value.trim();
+  if(!val) return;
+  const log = getWorkoutLog();
+  log[exId+"_next_target"] = val;
+  saveWorkoutLog(log);
+  // Flash feedback
+  const btn = document.querySelector(`[onclick="saveTarget('${exId}','${inputId}')"]`);
+  if(btn){ const orig=btn.textContent; btn.textContent="✓ Saved!"; setTimeout(()=>btn.textContent=orig,1500); }
+}
+
+// ── Voice log: say "20 kg 5 reps" or "20 kilograms 5 repetitions" ──
+let activeVoiceRecog = null;
+let activeVoicePi = null, activeVoiceEi = null;
+
+function voiceLogSet(pi, ei, exId) {
+  if(!SpeechRecognition) {
+    document.getElementById(`vlbt_${pi}_${ei}`).textContent = "Voice not supported on this browser.";
+    return;
+  }
+  const btn = document.getElementById(`vlb_${pi}_${ei}`);
+  const label = document.getElementById(`vlbl_${pi}_${ei}`);
+  const transcript = document.getElementById(`vlbt_${pi}_${ei}`);
+
+  // Stop if already recording this one
+  if(activeVoiceRecog && activeVoicePi===pi && activeVoiceEi===ei) {
+    activeVoiceRecog.stop(); return;
+  }
+  // Stop any other recording
+  if(activeVoiceRecog) activeVoiceRecog.stop();
+
+  activeVoiceRecog = new SpeechRecognition();
+  activeVoiceRecog.lang = "en-US";
+  activeVoiceRecog.continuous = false;
+  activeVoiceRecog.interimResults = true;
+  activeVoicePi = pi; activeVoiceEi = ei;
+
+  activeVoiceRecog.onstart = () => {
+    btn.classList.add("listening");
+    label.textContent = "Listening… say '20 kg 5 reps'";
+    transcript.textContent = "";
+  };
+
+  activeVoiceRecog.onresult = (e) => {
+    let heard = "";
+    for(let i=0; i<e.results.length; i++) heard = e.results[i][0].transcript;
+    transcript.textContent = '"' + heard + '"';
+
+    if(e.results[0].isFinal) {
+      const parsed = parseVoiceSet(heard);
+      if(parsed) {
+        // Find next empty set or add new
+        const dk = todayKey(); const log = getWorkoutLog();
+        const key = `${dk}_${exId}_sets`;
+        if(!log[key]) log[key] = [];
+        let targetSi = log[key].findIndex(s=>!s.w&&!s.r);
+        if(targetSi === -1) { targetSi = log[key].length; log[key].push({w:"",r:"",done:false}); }
+        log[key][targetSi] = { w: String(parsed.kg), r: String(parsed.reps), done: false };
+        // PR check
+        const curPR = parseFloat(log[exId+"_pr"]||0);
+        if(parsed.kg > curPR) { log[exId+"_pr"] = String(parsed.kg); log[exId+"_pr_reps"] = String(parsed.reps); }
+        saveWorkoutLog(log);
+        transcript.textContent = `✓ Logged: ${parsed.kg}kg × ${parsed.reps} reps`;
+        // Update inputs visually
+        const winp = document.getElementById(`winp_${pi}_${ei}_${targetSi}`);
+        const rinp = document.getElementById(`rinp_${pi}_${ei}_${targetSi}`);
+        if(winp) winp.value = parsed.kg;
+        if(rinp) rinp.value = parsed.reps;
+        if(!winp) {
+          // New set row needs to be added to DOM
+          const container = document.getElementById(`setsGrid_${pi}_${ei}`);
+          if(container) {
+            const si = targetSi;
+            const row = document.createElement("div");
+            row.className = "set-item"; row.id = `si_${pi}_${ei}_${si}`;
+            row.innerHTML = `<div class="si-num">${si+1}</div>
+              <input class="si-inp" type="number" value="${parsed.kg}" step="0.5" inputmode="decimal" id="winp_${pi}_${ei}_${si}" oninput="logSet('${exId}',${si},'w',this.value,${pi})"/>
+              <input class="si-inp" type="number" value="${parsed.reps}" inputmode="numeric" id="rinp_${pi}_${ei}_${si}" oninput="logSet('${exId}',${si},'r',this.value,${pi})"/>
+              <div class="si-check" id="sck_${pi}_${ei}_${si}" onclick="toggleSetDone('${exId}',${si},${pi},${ei})">✓</div>`;
+            container.appendChild(row);
+          }
+        }
+      } else {
+        transcript.textContent = "❌ Couldn't understand. Try: '20 kg 5 reps'";
+      }
+    }
+  };
+
+  activeVoiceRecog.onerror = (e) => {
+    transcript.textContent = e.error==="not-allowed" ? "Mic access denied." : "Try again.";
+    btn.classList.remove("listening"); label.textContent = "Tap to speak a set";
+    activeVoiceRecog = null;
+  };
+
+  activeVoiceRecog.onend = () => {
+    btn.classList.remove("listening"); label.textContent = "Tap to speak a set";
+    activeVoiceRecog = null;
+  };
+
+  activeVoiceRecog.start();
+}
+
+function parseVoiceSet(text) {
+  // Normalize
+  const t = text.toLowerCase()
+    .replace(/\bkilograms?\b|\bkgs?\b/g,"kg")
+    .replace(/\brepetitions?\b|\breps?\b|\btimes\b/g,"reps")
+    .replace(/\band\b/g," ")
+    .replace(/\bfor\b/g," ")
+    .replace(/\bdone\b/g," ")
+    .replace(/\bhalf\b/g,".5")
+    .replace(/\bpoint\b|\bdot\b/g,".");
+
+  // Word numbers
+  const words = {"zero":0,"one":1,"two":2,"three":3,"four":4,"five":5,"six":6,"seven":7,"eight":8,"nine":9,
+    "ten":10,"eleven":11,"twelve":12,"thirteen":13,"fourteen":14,"fifteen":15,"sixteen":16,"seventeen":17,
+    "eighteen":18,"nineteen":19,"twenty":20,"thirty":30,"forty":40,"fifty":50,"sixty":60,"seventy":70,
+    "eighty":80,"ninety":90,"hundred":100,"twenty-five":25,"twenty-two":22};
+  let norm = t;
+  Object.entries(words).forEach(([w,n])=>{ norm=norm.replace(new RegExp("\\b"+w+"\\b","g"),n); });
+
+  // Patterns: "20 kg 5 reps", "20 5", "20kg 5reps", "did 20 for 5"
+  const patterns = [
+    /(\d+\.?\d*)\s*kg\s+(\d+)\s*reps?/,
+    /(\d+\.?\d*)\s*kg\s+(\d+)/,
+    /(\d+\.?\d*)\s+(\d+)\s*reps?/,
+    /(\d+\.?\d*)\s+(\d+)/,
+    /(\d+\.?\d*)\s*x\s*(\d+)/,
+  ];
+  for(const p of patterns) {
+    const m = norm.match(p);
+    if(m) {
+      const kg = parseFloat(m[1]);
+      const reps = parseInt(m[2]);
+      if(kg>0 && reps>0 && kg<500 && reps<100) return {kg, reps};
+    }
+  }
+  return null;
+}
+
+// ══ JOURNAL ══════════════════════════════════════════════
+let selectedMood = "";
+let viewingEntry = null;
+
+function pickMood(btn) {
+  document.querySelectorAll(".mood-btn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  selectedMood = btn.dataset.m;
+}
+
+function saveJournal() {
+  const ta = document.getElementById("journalTA");
+  const text = ta.value.trim();
+  if(!text) return;
+  const journals = getJournals();
+  journals.unshift({ id: Date.now(), date: new Date().toISOString(), mood: selectedMood||"", text });
+  saveJournals(journals);
+  ta.value = ""; selectedMood = "";
+  document.querySelectorAll(".mood-btn").forEach(b=>b.classList.remove("on"));
+  renderJournal();
+}
+
+function renderJournal() {
+  const journals = getJournals();
+  const list = document.getElementById("journalList");
+  if(!journals.length) { list.innerHTML = `<div style="color:var(--muted);font-size:14px;text-align:center;padding:32px;">No entries yet. Write your first one above.</div>`; return; }
+  list.innerHTML = journals.map((j,i)=>{
+    const d = new Date(j.date);
+    const ds = d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}) + " · " + d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
+    return `<div class="journal-entry" onclick="openEntry(${i})">
+      <div class="je-date">${j.mood?`<span class="je-mood">${j.mood}</span>`:""}${ds}</div>
+      <div class="je-preview">${j.text}</div>
+    </div>`;
+  }).join("");
+}
+
+function openEntry(i) {
+  const journals = getJournals();
+  const j = journals[i];
+  viewingEntry = i;
+  const d = new Date(j.date);
+  document.getElementById("jefDate").textContent = d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  document.getElementById("jefMood").textContent = j.mood||"";
+  document.getElementById("jefText").textContent = j.text;
+  document.getElementById("jefPanel").classList.add("on");
+}
+
+function closeJEF() {
+  document.getElementById("jefPanel").classList.remove("on");
+  viewingEntry = null;
+}
+
+function deleteEntry() {
+  if(viewingEntry===null) return;
+  if(!confirm("Delete this entry?")) return;
+  const journals = getJournals();
+  journals.splice(viewingEntry,1);
+  saveJournals(journals);
+  closeJEF(); renderJournal();
+}
+
+// ══ 100 DAY COUNTDOWN ══════════════════════════════════
+const CHALLENGE_START = new Date("2026-06-01T00:00:00");
+const CHALLENGE_END   = new Date("2026-09-09T23:59:59");
+
+const CHALLENGE_MESSAGES_PRE = [
+  "The grind starts June 1. Lock in now.",
+  "Every day before is preparation. Don't waste it.",
+  "100 days to become who you're supposed to be.",
+  "The version of you on Sep 9 is built starting now.",
+];
+const CHALLENGE_MESSAGES_ACTIVE = [
+  "Every rep, every prayer, every day counts.",
+  "You started. Most people never do.",
+  "The goal is not perfection. It's consistency.",
+  "God sees every 4:30 AM you show up.",
+  "The body achieves what the mind believes.",
+  "Iron sharpens iron. Keep sharpening.",
+  "Stay the course. The results are coming.",
+  "One day at a time. One set at a time.",
+  "Discipline is choosing what you want most over what you want now.",
+  "You are not the same person who started. Keep going.",
+];
+
+function renderCountdown() {
+  const now = new Date();
+  const badge = document.getElementById("cdBadge");
+  const dayNum_el = document.getElementById("cdDayNum");
+  const dayBig = document.getElementById("cdDayBig");
+  const dayOf = document.getElementById("cdDayOf");
+  const numsEl = document.getElementById("cdNums");
+  const barWrap = document.getElementById("cdBarWrap");
+  const fill = document.getElementById("cdFill");
+  const pct2 = document.getElementById("cdPct2");
+  const msg = document.getElementById("cdMsg");
+
+  const msgIdx = Math.floor(now.getTime() / 60000) % CHALLENGE_MESSAGES_ACTIVE.length;
+  const msgIdxPre = Math.floor(now.getTime() / 60000) % CHALLENGE_MESSAGES_PRE.length;
+
+  // ── BEFORE ──
+  if (now < CHALLENGE_START) {
+    const msLeft = CHALLENGE_START - now;
+    const d = Math.floor(msLeft / 86400000);
+    const h = Math.floor((msLeft % 86400000) / 3600000);
+    const m = Math.floor((msLeft % 3600000) / 60000);
+    const s = Math.floor((msLeft % 60000) / 1000);
+    badge.textContent = "STARTING SOON";
+    badge.className = "cd-badge pre";
+    dayNum_el.style.display = "none";
+    numsEl.style.display = "flex";
+    document.getElementById("cdD").textContent = String(d).padStart(2,"0");
+    document.getElementById("cdH").textContent = String(h).padStart(2,"0");
+    document.getElementById("cdM").textContent = String(m).padStart(2,"0");
+    document.getElementById("cdS").textContent = String(s).padStart(2,"0");
+    document.getElementById("cdD").className = "cd-n";
+    barWrap.style.display = "none";
+    msg.textContent = CHALLENGE_MESSAGES_PRE[msgIdxPre];
+    return;
+  }
+
+  // ── AFTER ──
+  if (now > CHALLENGE_END) {
+    badge.textContent = "✓ COMPLETE";
+    badge.className = "cd-badge done";
+    dayNum_el.style.display = "flex";
+    dayBig.textContent = "100";
+    dayOf.textContent = "/ 100 days";
+    numsEl.style.display = "none";
+    barWrap.style.display = "block";
+    fill.style.width = "100%";
+    fill.style.background = "var(--green)";
+    pct2.textContent = "100%";
+    msg.textContent = "June 1 – September 9. You stayed the course. 🏆";
+    return;
+  }
+
+  // ── ACTIVE ──
+  const msElapsed = now - CHALLENGE_START;
+  const msTotal = CHALLENGE_END - CHALLENGE_START;
+  const msLeft = CHALLENGE_END - now;
+  const dayN = Math.floor(msElapsed / 86400000) + 1;
+  const d = Math.floor(msLeft / 86400000);
+  const h = Math.floor((msLeft % 86400000) / 3600000);
+  const m = Math.floor((msLeft % 3600000) / 60000);
+  const s = Math.floor((msLeft % 60000) / 1000);
+  const pct = Math.min(100, (msElapsed / msTotal) * 100);
+  const pctR = Math.round(pct);
+
+  badge.textContent = `DAY ${dayN} OF 100`;
+  badge.className = "cd-badge active";
+
+  dayNum_el.style.display = "flex";
+  dayBig.textContent = dayN;
+  dayBig.className = "cd-day-big gold";
+  dayOf.textContent = `/ 100 days`;
+
+  numsEl.style.display = "flex";
+  document.getElementById("cdD").textContent = String(d).padStart(2,"0");
+  document.getElementById("cdH").textContent = String(h).padStart(2,"0");
+  document.getElementById("cdM").textContent = String(m).padStart(2,"0");
+  document.getElementById("cdS").textContent = String(s).padStart(2,"0");
+  document.getElementById("cdD").className = "cd-n gold";
+
+  barWrap.style.display = "block";
+  fill.style.width = pct + "%";
+  pct2.textContent = pctR + "% done";
+
+  msg.textContent = CHALLENGE_MESSAGES_ACTIVE[msgIdx];
+}
+
+// ══ CHALLENGE TAB COUNTDOWN (mini) ══════════════════════
+function renderChalCountdown() {
+  const el = document.getElementById("chalCountdown");
+  if(!el) return;
+  const now = new Date();
+  const msElapsed = now - CHALLENGE_START;
+  const msTotal = CHALLENGE_END - CHALLENGE_START;
+  const msLeft = CHALLENGE_END - now;
+
+  let html = "";
+  if(now < CHALLENGE_START) {
+    const d = Math.floor((CHALLENGE_START-now)/86400000);
+    html = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">Starts in</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--gold);">${d} days</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">Jun 1, 2026</div>
+    </div>`;
+  } else if(now > CHALLENGE_END) {
+    html = `<div style="background:rgba(90,138,90,0.1);border:1px solid #5a8a5a;border-radius:10px;padding:14px 16px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:#6a9e6a;text-transform:uppercase;letter-spacing:0.08em;">🏆 100 Days Complete</div>`;
+  } else {
+    const dayN = Math.floor(msElapsed/86400000)+1;
+    const pct = Math.min(100,(msElapsed/msTotal)*100);
+    const d = Math.floor(msLeft/86400000);
+    const h = String(Math.floor((msLeft%86400000)/3600000)).padStart(2,"0");
+    const m = String(Math.floor((msLeft%3600000)/60000)).padStart(2,"0");
+    const s = String(Math.floor((msLeft%60000)/1000)).padStart(2,"0");
+    html = `<div style="background:var(--bg2);border:1px solid var(--gold);border-radius:10px;padding:14px 16px;">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+        <div><span style="font-family:'Barlow Condensed',sans-serif;font-size:44px;font-weight:900;color:var(--gold);line-height:1;">${dayN}</span><span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;color:var(--muted);"> / 100</span></div>
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);">${d}d ${h}:${m}:${s}</div>
+      </div>
+      <div style="height:6px;background:var(--dim);border-radius:3px;overflow:hidden;margin-bottom:6px;">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(to right,var(--gold),#e8c87a);border-radius:3px;transition:width 1s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">
+        <span>Jun 1</span><span>${Math.round(pct)}% complete</span><span>Sep 9</span>
+      </div>
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+// ══ CHALLENGE PASS/FAIL ══════════════════════════════════
+const getChalLog = () => get("mw_challenge") || {};
+const saveChalLog = v => set("mw_challenge", v);
+
+function getDayIndex(dateStr) {
+  // Returns 0-99 for June 1 – Sep 9, or -1 if outside range
+  const d = new Date(dateStr + "T00:00:00");
+  const diff = Math.floor((d - CHALLENGE_START) / 86400000);
+  return (diff >= 0 && diff < 100) ? diff : -1;
+}
+
+function renderChallengeGrid() {
+  const log = getChalLog();
+  const now = new Date();
+  const todayStr = todayKey();
+  const todayIdx = getDayIndex(todayStr);
+  const grid = document.getElementById("chalGrid");
+  if(!grid) return;
+
+  let passCount = 0, failCount = 0, streak = 0, streakRunning = true;
+
+  // Build day date strings for all 100 days
+  const days = Array.from({length:100},(_,i)=>{
+    const d = new Date(CHALLENGE_START); d.setDate(d.getDate()+i);
+    return d.toISOString().split("T")[0];
+  });
+
+  // Count stats
+  days.forEach((dk,i)=>{
+    if(log[dk]==="pass") passCount++;
+    if(log[dk]==="fail") failCount++;
+  });
+
+  // Streak = consecutive passes going backwards from today
+  for(let i=todayIdx; i>=0; i--) {
+    if(log[days[i]]==="pass") streak++;
+    else { streakRunning=false; break; }
+  }
+
+  document.getElementById("chalPassCount").textContent = passCount;
+  document.getElementById("chalFailCount").textContent = failCount;
+  document.getElementById("chalStreakCount").textContent = streak;
+
+  grid.innerHTML = days.map((dk,i)=>{
+    const status = log[dk];
+    const isToday = dk===todayStr;
+    const isFuture = new Date(dk+"T00:00:00") > now && !isToday;
+    const isPast = new Date(dk+"T23:59:59") < now && !isToday;
+
+    let bg = "var(--dim)";
+    let border = "1px solid var(--border)";
+    let color = "var(--muted)";
+    let cursor = "default";
+    let emoji = "";
+
+    if(status==="pass") { bg="var(--green)"; border="1px solid var(--green)"; color="var(--bg)"; emoji="✓"; }
+    else if(status==="fail") { bg="#8a3a3a"; border="1px solid #8a3a3a"; color="#ffaaaa"; emoji="✕"; }
+    else if(isFuture) { bg="var(--dim)"; border="1px dashed var(--border)"; color="var(--muted)"; }
+
+    if(!isFuture) cursor = "pointer";
+    if(isToday && !status) { border="2px solid var(--gold)"; }
+
+    return `<div onclick="${isFuture?"":"toggleDay('"+dk+"')"}" style="aspect-ratio:1;border-radius:6px;background:${bg};border:${border};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:${cursor};transition:all 0.2s;position:relative;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:${color};line-height:1;">${emoji||i+1}</div>
+      ${isToday?`<div style="position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--gold);"></div>`:""}
+    </div>`;
+  }).join("");
+}
+
+function toggleDay(dk) {
+  const log = getChalLog();
+  const current = log[dk];
+  if(current==="pass") log[dk]="fail";
+  else if(current==="fail") delete log[dk];
+  else log[dk]="pass";
+  saveChalLog(log);
+  renderChallengeGrid();
+}
+
+// ══ PRAYER / BIBLE ════════════════════════════════════════
+const getPrayLog = () => get("mw_prayer") || {};
+const savePrayLog = v => set("mw_prayer", v);
+
+function renderPrayerTab() {
+  const dk = todayKey();
+  const log = getPrayLog();
+  const prayed = log[dk];
+
+  // Highlight buttons
+  const yBtn = document.getElementById("prayYesBtn");
+  const nBtn = document.getElementById("prayNoBtn");
+  if(yBtn) {
+    yBtn.style.background = prayed===true ? "rgba(90,138,90,0.2)" : "var(--bg2)";
+    yBtn.style.borderColor = prayed===true ? "var(--green)" : "var(--border)";
+    yBtn.style.color = prayed===true ? "#6a9e6a" : "var(--muted)";
+    nBtn.style.background = prayed===false ? "rgba(138,90,90,0.2)" : "var(--bg2)";
+    nBtn.style.borderColor = prayed===false ? "#8a3a3a" : "var(--border)";
+    nBtn.style.color = prayed===false ? "#ffaaaa" : "var(--muted)";
+  }
+
+  // Prayer streak
+  let streak = 0;
+  const today = new Date();
+  for(let i=0; i<365; i++) {
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const k = d.toISOString().split("T")[0];
+    if(log[k]===true) streak++;
+    else break;
+  }
+  const pse = document.getElementById("prayStreak");
+  if(pse) pse.textContent = streak;
+
+  // Today's verse in bible tab
+  const vEl = document.getElementById("bibleVerseToday");
+  if(vEl) {
+    const dow = new Date().getDay();
+    const v = DAILY_VERSES[dow];
+    vEl.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">Today's Verse</div>
+      <div style="font-size:15px;font-style:italic;color:var(--cream);line-height:1.7;margin-bottom:6px;">"${v.text}"</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);">— ${v.ref}</div>`;
+  }
+}
+
+function markPrayer(val) {
+  const log = getPrayLog();
+  log[todayKey()] = val;
+  savePrayLog(log);
+  renderPrayerTab();
+}
+
+// ══ MEAL & NUTRITION ════════════════════════════════════
+
+// Goals: [calories, protein_g, fat_g, carb_g]
+const MEAL_GOALS = {
+  cutting:  { cal: 1600, pro: 140, fat: 50,  carb: 140 },
+  recomp:   { cal: 2000, pro: 160, fat: 65,  carb: 200 },
+};
+
+// Rodas's real meals — grouped by meal time
+const PRESET_MEALS = {
+  cutting: {
+    nonvegan: [
+      // ── BREAKFAST ──
+      { name:"🌅 Overnight Oats (40g oats + 56g banana + 3 egg whites)", meal:"Breakfast", cal:275, pro:18, fat:3,  carb:46 },
+      { name:"🌅 3 Egg Whites + 30g Barley Bread",                        meal:"Breakfast", cal:185, pro:24, fat:2,  carb:22 },
+      { name:"🌅 Protein Pancake (40g oats + banana + 3 egg whites)",     meal:"Breakfast", cal:275, pro:18, fat:3,  carb:46 },
+      // ── LUNCH ──
+      { name:"🍽 Ground Beef (112g) + Sweet Potato (100g) + Cucumber/Onion/Tomato", meal:"Lunch", cal:310, pro:26, fat:10, carb:28 },
+      { name:"🍽 Chicken Breast (112g) + Sweet Potato (100g) + Cucumber/Onion/Tomato", meal:"Lunch", cal:250, pro:30, fat:3,  carb:28 },
+      // ── DINNER ──
+      { name:"🌙 Tuna + Salad (cucumber, tomato, greens)",                meal:"Dinner", cal:200, pro:36, fat:2,  carb:8  },
+      { name:"🌙 Chicken Breast + Salad",                                  meal:"Dinner", cal:230, pro:38, fat:4,  carb:8  },
+    ],
+    vegan: [
+      { name:"🌅 Overnight Oats (40g oats + 56g banana + plant protein)", meal:"Breakfast", cal:290, pro:18, fat:4,  carb:50 },
+      { name:"🌅 Tofu Scramble + Barley Bread",                           meal:"Breakfast", cal:260, pro:22, fat:8,  carb:24 },
+      { name:"🍽 Lentils + Sweet Potato (100g) + Cucumber/Onion/Tomato",  meal:"Lunch",    cal:320, pro:16, fat:2,  carb:60 },
+      { name:"🍽 Chickpea Bowl + Salad",                                   meal:"Lunch",    cal:360, pro:14, fat:6,  carb:62 },
+      { name:"🌙 Tempeh + Salad",                                          meal:"Dinner",   cal:240, pro:26, fat:8,  carb:12 },
+      { name:"🌙 Edamame + Mixed Greens Salad",                            meal:"Dinner",   cal:200, pro:16, fat:7,  carb:16 },
+    ],
+  },
+  recomp: {
+    nonvegan: [
+      { name:"🌅 Overnight Oats (40g oats + 56g banana + 3 egg whites)", meal:"Breakfast", cal:275, pro:18, fat:3,  carb:46 },
+      { name:"🌅 3 Egg Whites + 30g Barley Bread",                        meal:"Breakfast", cal:185, pro:24, fat:2,  carb:22 },
+      { name:"🌅 Protein Pancake (40g oats + banana + 3 egg whites)",     meal:"Breakfast", cal:275, pro:18, fat:3,  carb:46 },
+      { name:"🍽 Ground Beef (112g) + Sweet Potato (100g) + Cucumber/Onion/Tomato", meal:"Lunch", cal:310, pro:26, fat:10, carb:28 },
+      { name:"🍽 Chicken Breast (112g) + Sweet Potato (100g) + Cucumber/Onion/Tomato", meal:"Lunch", cal:250, pro:30, fat:3,  carb:28 },
+      { name:"🌙 Tuna + Salad",                                            meal:"Dinner",   cal:200, pro:36, fat:2,  carb:8  },
+      { name:"🌙 Chicken Breast + Salad",                                  meal:"Dinner",   cal:230, pro:38, fat:4,  carb:8  },
+      { name:"➕ Matcha Latte (oat milk)",                                 meal:"Snack",    cal:80,  pro:2,  fat:2,  carb:12 },
+      { name:"➕ Greek Yogurt",                                             meal:"Snack",    cal:130, pro:15, fat:0,  carb:10 },
+    ],
+    vegan: [
+      { name:"🌅 Overnight Oats (40g oats + 56g banana + plant protein)", meal:"Breakfast", cal:290, pro:18, fat:4,  carb:50 },
+      { name:"🍽 Lentils + Sweet Potato + Salad",                          meal:"Lunch",    cal:340, pro:18, fat:3,  carb:62 },
+      { name:"🍽 Chickpea Bowl + Sweet Potato",                            meal:"Lunch",    cal:440, pro:16, fat:6,  carb:78 },
+      { name:"🌙 Tempeh + Salad",                                          meal:"Dinner",   cal:240, pro:26, fat:8,  carb:12 },
+      { name:"➕ Matcha Latte",                                             meal:"Snack",    cal:80,  pro:2,  fat:2,  carb:12 },
+    ],
+  },
+};
+
+let currentMode = "cutting";
+let currentDiet = { cutting: "nonvegan", recomp: "nonvegan" };
+let bmiSex = "female";
+
+const getMealLog = () => get("mw_meallog") || {};
+const saveMealLog = v => set("mw_meallog", v);
+
+function setMode(mode) {
+  currentMode = mode;
+  ["cutting","recomp","bmi"].forEach(m => {
+    document.getElementById("modeBtn_"+m).classList.toggle("on", m===mode);
+    const p = document.getElementById("mealPanel_"+m);
+    if(p) p.classList.toggle("on", m===mode);
+  });
+  if(mode !== "bmi") renderMealPanel(mode);
+}
+
+function setDiet(mode, diet) {
+  currentDiet[mode] = diet;
+  ["nonvegan","vegan"].forEach(d => {
+    const btn = document.getElementById(`dietTab_${mode}_${d}`);
+    if(btn) btn.classList.toggle("on", d===diet);
+  });
+  renderMealPanel(mode);
+}
+
+function renderMealPanel(mode) {
+  renderMacroBar(mode);
+  renderMealLog(mode);
+  renderMealSuggestions(mode);
+}
+
+function renderMacroBar(mode) {
+  const dk = todayKey();
+  const log = getMealLog();
+  const entries = (log[`${dk}_${mode}`] || []);
+  const goals = MEAL_GOALS[mode];
+  const totals = entries.reduce((acc, e) => {
+    acc.cal += e.cal||0; acc.pro += e.pro||0; acc.fat += e.fat||0; acc.carb += e.carb||0;
+    return acc;
+  }, {cal:0, pro:0, fat:0, carb:0});
+
+  const calPct = Math.min(100, (totals.cal/goals.cal)*100);
+  const proPct = Math.min(100, (totals.pro/goals.pro)*100);
+  const fatPct = Math.min(100, (totals.fat/goals.fat)*100);
+  const carbPct = Math.min(100,(totals.carb/goals.carb)*100);
+  const calColor = calPct > 100 ? "#8a3a3a" : calPct > 85 ? "#c8a86a" : "#6a9e6a";
+
+  document.getElementById(`macroBar_${mode}`).innerHTML = `
+    <div class="macro-bar-card">
+      <div class="macro-totals">
+        <div class="macro-cell">
+          <div class="macro-val" style="color:${calColor}">${Math.round(totals.cal)}</div>
+          <div class="macro-lbl">kcal</div>
+          <div class="macro-goal" style="color:${calColor}">/ ${goals.cal}</div>
+        </div>
+        <div class="macro-cell">
+          <div class="macro-val" style="color:#6a9e6a">${Math.round(totals.pro)}g</div>
+          <div class="macro-lbl">protein</div>
+          <div class="macro-goal" style="color:var(--muted)">/ ${goals.pro}g</div>
+        </div>
+        <div class="macro-cell">
+          <div class="macro-val" style="color:#c8a86a">${Math.round(totals.fat)}g</div>
+          <div class="macro-lbl">fat</div>
+          <div class="macro-goal" style="color:var(--muted)">/ ${goals.fat}g</div>
+        </div>
+        <div class="macro-cell">
+          <div class="macro-val" style="color:#4a7aaa">${Math.round(totals.carb)}g</div>
+          <div class="macro-lbl">carbs</div>
+          <div class="macro-goal" style="color:var(--muted)">/ ${goals.carb}g</div>
+        </div>
+      </div>
+      <div class="macro-progress"><div class="macro-fill" style="width:${calPct}%;background:${calColor}"></div></div>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <div style="flex:1;"><div class="macro-progress"><div class="macro-fill" style="width:${proPct}%;background:#6a9e6a"></div></div></div>
+        <div style="flex:1;"><div class="macro-progress"><div class="macro-fill" style="width:${fatPct}%;background:#c8a86a"></div></div></div>
+        <div style="flex:1;"><div class="macro-progress"><div class="macro-fill" style="width:${carbPct}%;background:#4a7aaa"></div></div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">${Math.round(goals.cal-totals.cal)} kcal remaining</div>
+        <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">${Math.round(goals.pro-totals.pro)}g protein to go</div>
+      </div>
+    </div>`;
+}
+
+function renderMealLog(mode) {
+  const dk = todayKey();
+  const log = getMealLog();
+  const entries = log[`${dk}_${mode}`] || [];
+  const el = document.getElementById(`mealLog_${mode}`);
+  if(!entries.length) {
+    el.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;margin-bottom:8px;">No food logged yet today.</div>`;
+    return;
+  }
+  el.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px 14px;margin-bottom:8px;">` +
+    entries.map((e,i)=>`
+      <div class="food-log-item">
+        <div style="flex:1;">
+          <div class="food-log-name">${e.name}</div>
+          <div class="food-log-macros">P: ${e.pro}g · F: ${e.fat}g · C: ${e.carb}g</div>
+        </div>
+        <div class="food-log-cal">${e.cal}</div>
+        <button class="food-log-del" onclick="removeFood('${mode}',${i})">×</button>
+      </div>`).join("") + `</div>`;
+}
+
+function renderMealSuggestions(mode) {
+  const diet = currentDiet[mode];
+  const meals = PRESET_MEALS[mode][diet] || [];
+  const el = document.getElementById(`mealSuggestions_${mode}`);
+  // Group by meal time
+  const groups = {};
+  meals.forEach(m => {
+    const g = m.meal || "Other";
+    if(!groups[g]) groups[g] = [];
+    groups[g].push(m);
+  });
+  const groupOrder = ["Breakfast","Lunch","Dinner","Snack","Other"];
+  el.innerHTML = groupOrder.filter(g=>groups[g]).map(g=>`
+    <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin:12px 0 6px;">${g}</div>
+    ${groups[g].map(m=>`
+      <div class="meal-suggestion" onclick="quickAdd('${mode}','${m.name.replace(/'/g,"\\'").replace(/"/g,"&quot;")}',${m.cal},${m.pro},${m.fat},${m.carb})">
+        <div class="ms-name">${m.name}</div>
+        <div class="ms-macros">
+          <div class="ms-macro"><span>${m.cal}</span> kcal</div>
+          <div class="ms-macro"><span>${m.pro}g</span> protein</div>
+          <div class="ms-macro"><span>${m.fat}g</span> fat</div>
+          <div class="ms-macro"><span>${m.carb}g</span> carbs</div>
+        </div>
+      </div>`).join("")}`).join("");
+}
+
+function addFood(mode) {
+  const name = document.getElementById(`foodName_${mode}`).value.trim();
+  const cal  = parseFloat(document.getElementById(`foodCal_${mode}`).value)||0;
+  const pro  = parseFloat(document.getElementById(`foodPro_${mode}`).value)||0;
+  const fat  = parseFloat(document.getElementById(`foodFat_${mode}`).value)||0;
+  const carb = parseFloat(document.getElementById(`foodCarb_${mode}`).value)||0;
+  if(!name && !cal) return;
+  const dk = todayKey(); const log = getMealLog();
+  const key = `${dk}_${mode}`;
+  if(!log[key]) log[key] = [];
+  log[key].push({name: name||"Food", cal, pro, fat, carb});
+  saveMealLog(log);
+  ["foodName","foodCal","foodPro","foodFat","foodCarb"].forEach(id=>{
+    const el = document.getElementById(`${id}_${mode}`);
+    if(el) el.value = "";
+  });
+  renderMealPanel(mode);
+}
+
+function quickAdd(mode, name, cal, pro, fat, carb) {
+  const dk = todayKey(); const log = getMealLog();
+  const key = `${dk}_${mode}`;
+  if(!log[key]) log[key] = [];
+  log[key].push({name, cal, pro, fat, carb});
+  saveMealLog(log);
+  renderMealPanel(mode);
+}
+
+function removeFood(mode, idx) {
+  const dk = todayKey(); const log = getMealLog();
+  const key = `${dk}_${mode}`;
+  if(log[key]) log[key].splice(idx,1);
+  saveMealLog(log);
+  renderMealPanel(mode);
+}
+
+// ── BMI ──────────────────────────────────────────────────
+function setBmiSex(sex) {
+  bmiSex = sex;
+  document.getElementById("bmiF").style.background = sex==="female"?"rgba(200,168,106,0.2)":"var(--bg3)";
+  document.getElementById("bmiF").style.borderColor = sex==="female"?"var(--gold)":"var(--border)";
+  document.getElementById("bmiF").style.color = sex==="female"?"var(--gold)":"var(--muted)";
+  document.getElementById("bmiM").style.background = sex==="male"?"rgba(200,168,106,0.2)":"var(--bg3)";
+  document.getElementById("bmiM").style.borderColor = sex==="male"?"var(--gold)":"var(--border)";
+  document.getElementById("bmiM").style.color = sex==="male"?"var(--gold)":"var(--muted)";
+}
+
+function calcBMI() {
+  const h = parseFloat(document.getElementById("bmiHeight").value);
+  const w = parseFloat(document.getElementById("bmiWeight").value);
+  const age = parseFloat(document.getElementById("bmiAge").value)||25;
+  if(!h||!w) return;
+  const hm = h/100;
+  const bmi = w/(hm*hm);
+  let cat, catColor;
+  if(bmi<18.5){cat="Underweight";catColor="#4a8aaa";}
+  else if(bmi<25){cat="Healthy Weight";catColor="#4a9e6a";}
+  else if(bmi<30){cat="Overweight";catColor="#c8a86a";}
+  else{cat="Obese";catColor="#8a3a3a";}
+  const markerPct = Math.min(98,Math.max(2,((bmi-15)/25)*100));
+
+  // TDEE (Mifflin-St Jeor)
+  let bmr;
+  if(bmiSex==="male") bmr = 10*w + 6.25*h - 5*age + 5;
+  else bmr = 10*w + 6.25*h - 5*age - 161;
+  const tdee = Math.round(bmr * 1.55); // moderate activity
+  const cutting = Math.round(tdee - 400);
+  const recomp  = Math.round(tdee - 100);
+  const bulk    = Math.round(tdee + 300);
+
+  document.getElementById("bmiResult").style.display = "block";
+  document.getElementById("bmiResult").innerHTML = `
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;color:${catColor};line-height:1;">${bmi.toFixed(1)}</div>
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;color:${catColor};">${cat}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">Body Mass Index</div>
+      </div>
+    </div>
+    <div class="bmi-scale"><div class="bmi-marker" style="left:${markerPct}%"></div></div>
+    <div class="bmi-labels"><span>15</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>
+    <div style="display:flex;gap:12px;margin-top:10px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">
+      <span style="color:#4a8aaa">▪ Under</span><span style="color:#4a9e6a">▪ Healthy</span><span style="color:#c8a86a">▪ Over</span><span style="color:#8a3a3a">▪ Obese</span>
+    </div>`;
+
+  document.getElementById("tdeeResult").style.display = "block";
+  document.getElementById("tdeeResult").innerHTML = `
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;">Estimated Daily Calories</div>
+    <div class="tdee-row"><div class="tdee-label">Maintenance (TDEE)</div><div class="tdee-val">${tdee} kcal</div></div>
+    <div class="tdee-row"><div class="tdee-label">🔥 Cutting (−400)</div><div class="tdee-val" style="color:#c87a4a">${cutting} kcal</div></div>
+    <div class="tdee-row"><div class="tdee-label">⚖️ Recomp (−100)</div><div class="tdee-val" style="color:#c8a86a">${recomp} kcal</div></div>
+    <div class="tdee-row"><div class="tdee-label">💪 Lean Bulk (+300)</div><div class="tdee-val" style="color:#6a9e6a">${bulk} kcal</div></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted);font-style:italic;">Based on moderate activity (4–5x/week). Adjust based on actual output.</div>`;
+}
+
+// ══ VOICE RECOGNITION ═══════════════════════════════════
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+// ── Journal voice ────────────────────────────────────────
+let journalRecog = null;
+let journalRecording = false;
+
+function toggleJournalMic() {
+  if (!SpeechRecognition) {
+    document.getElementById("journalMicStatus").textContent = "Voice not supported on this browser.";
+    return;
+  }
+  if (journalRecording) {
+    journalRecog && journalRecog.stop();
+    return;
+  }
+  journalRecog = new SpeechRecognition();
+  journalRecog.lang = "en-US";
+  journalRecog.continuous = true;
+  journalRecog.interimResults = true;
+
+  const btn = document.getElementById("journalMicBtn");
+  const label = document.getElementById("journalMicLabel");
+  const status = document.getElementById("journalMicStatus");
+  const ta = document.getElementById("journalTA");
+
+  let sessionTranscript = "";
+  let baseText = ta.value;
+  if (baseText && !baseText.endsWith(" ")) baseText += " ";
+
+  journalRecog.onstart = () => {
+    journalRecording = true;
+    btn.classList.add("recording");
+    label.textContent = "Listening… tap to stop";
+    status.textContent = "🔴 Recording";
+  };
+
+  journalRecog.onresult = (e) => {
+    let interim = "";
+    let final = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += t + " ";
+      else interim += t;
+    }
+    sessionTranscript += final;
+    ta.value = baseText + sessionTranscript + interim;
+    // Auto scroll
+    ta.scrollTop = ta.scrollHeight;
+    if (final) baseText = ta.value.replace(interim, "");
+  };
+
+  journalRecog.onerror = (e) => {
+    status.textContent = e.error === "not-allowed"
+      ? "Microphone access denied. Allow mic in Safari settings."
+      : "Error: " + e.error;
+    stopJournalMic();
+  };
+
+  journalRecog.onend = () => stopJournalMic();
+
+  journalRecog.start();
+}
+
+function stopJournalMic() {
+  journalRecording = false;
+  const btn = document.getElementById("journalMicBtn");
+  const label = document.getElementById("journalMicLabel");
+  const status = document.getElementById("journalMicStatus");
+  if (btn) { btn.classList.remove("recording"); }
+  if (label) label.textContent = "Hold to speak";
+  if (status) status.textContent = "Tap again to continue recording";
+}
+
+// ── Intermittent Fasting Timer ──────────────────────────
+const IF_GOAL_HRS = 16; // 16:8 default
+
+const getIFState = () => get("mw_if") || { active: false, startTime: null, lastFastMs: null };
+const saveIFState = v => set("mw_if", v);
+
+let ifInterval = null;
+
+function toggleIF() {
+  const state = getIFState();
+  if (!state.active) {
+    // Start fast
+    state.active = true;
+    state.startTime = Date.now();
+    saveIFState(state);
+  } else {
+    // End fast
+    const elapsed = Date.now() - state.startTime;
+    state.lastFastMs = elapsed;
+    state.active = false;
+    state.startTime = null;
+    saveIFState(state);
+  }
+  renderIFTimer();
+}
+
+function renderIFTimer() {
+  const el = document.getElementById("ifTimer");
+  if (!el) return;
+  const state = getIFState();
+  const goalMs = IF_GOAL_HRS * 3600000;
+
+  if (state.active) {
+    const elapsed = Date.now() - state.startTime;
+    const pct = Math.min(100, (elapsed / goalMs) * 100);
+    const hrs = Math.floor(elapsed / 3600000);
+    const mins = Math.floor((elapsed % 3600000) / 60000);
+    const secs = Math.floor((elapsed % 60000) / 1000);
+    const remaining = Math.max(0, goalMs - elapsed);
+    const remHrs = Math.floor(remaining / 3600000);
+    const remMins = Math.floor((remaining % 3600000) / 60000);
+    const reached = elapsed >= goalMs;
+    const color = reached ? "#6a9e6a" : "#c8a86a";
+    const startTime = new Date(state.startTime).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
+
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:3px;">Fasting Since ${startTime}</div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:48px;font-weight:900;color:${color};line-height:1;">${String(hrs).padStart(2,"0")}:${String(mins).padStart(2,"0")}<span style="font-size:24px;">:${String(secs).padStart(2,"0")}</span></div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px;">${reached ? "✓ Goal reached!" : `${remHrs}h ${remMins}m to ${IF_GOAL_HRS}h goal`}</div>
+        </div>
+        <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
+          <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg)">
+            <circle cx="32" cy="32" r="26" fill="none" stroke="#222" stroke-width="5"/>
+            <circle cx="32" cy="32" r="26" fill="none" stroke="${color}" stroke-width="5"
+              stroke-dasharray="${163.4*pct/100} 163.4" stroke-linecap="round"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:${color};">${Math.round(pct)}%</div>
+        </div>
+      </div>
+      <div style="height:6px;background:var(--dim);border-radius:3px;overflow:hidden;margin-bottom:12px;">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width 1s;"></div>
+      </div>
+      <button onclick="toggleIF()" style="width:100%;padding:14px;background:#8a3a3a;color:#ffaaaa;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;border:1px solid #aa4a4a;">
+        ⏹ End Fast
+      </button>`;
+
+    if (!ifInterval) ifInterval = setInterval(renderIFTimer, 1000);
+  } else {
+    clearInterval(ifInterval); ifInterval = null;
+    let lastHTML = "";
+    if (state.lastFastMs) {
+      const lh = Math.floor(state.lastFastMs / 3600000);
+      const lm = Math.floor((state.lastFastMs % 3600000) / 60000);
+      const reached = state.lastFastMs >= goalMs;
+      lastHTML = `<div style="background:var(--bg3);border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">Last fast</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:${reached?"#6a9e6a":"var(--gold)"};">${lh}h ${lm}m ${reached?"✓":""}</div>
+      </div>`;
+    }
+    el.innerHTML = `
+      <div style="text-align:center;padding:8px 0 16px;">
+        <div style="font-size:36px;margin-bottom:6px;">⏱</div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:0.08em;margin-bottom:4px;">Not Fasting</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);">Goal: ${IF_GOAL_HRS} hours</div>
+      </div>
+      ${lastHTML}
+      <button onclick="toggleIF()" style="width:100%;padding:14px;background:rgba(200,168,106,0.15);color:var(--gold);border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;border:1px solid var(--gold);">
+        ▶ Start Fast
+      </button>`;
+  }
+}
+
+function renderMealInit() {
+  renderMealPanel("cutting");
+  renderMealPanel("recomp");
+  setBmiSex("female");
+  renderIFTimer();
+}
+setTimeout(()=>{
+  document.getElementById("splash").classList.add("gone");
+  renderToday();
+  renderCountdown();
+  renderChalCountdown();
+  renderChallengeGrid();
+  renderPrayerTab();
+  renderMealInit();
+  setInterval(()=>{ renderCountdown(); renderChalCountdown(); }, 1000);
+  renderWorkout();
+  renderJournal();
+}, 1800);
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
